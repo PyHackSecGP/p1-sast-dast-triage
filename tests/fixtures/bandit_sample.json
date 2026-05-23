@@ -1,0 +1,27 @@
+{
+  "results": [
+    {
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions",
+      "issue_text": "Possible SQL injection via string-based query construction.",
+      "issue_severity": "HIGH",
+      "issue_confidence": "MEDIUM",
+      "filename": "app/db.py",
+      "line_number": 42,
+      "code": "cursor.execute(\"SELECT * FROM users WHERE id = \" + user_id)",
+      "issue_cwe": {"id": "CWE-89", "link": "https://cwe.mitre.org/data/definitions/89.html"}
+    },
+    {
+      "test_id": "B105",
+      "test_name": "hardcoded_password_string",
+      "issue_text": "Possible hardcoded password: 'admin123'.",
+      "issue_severity": "LOW",
+      "issue_confidence": "MEDIUM",
+      "filename": "auth/login.py",
+      "line_number": 15,
+      "code": "DEFAULT_PASSWORD = 'admin123'",
+      "issue_cwe": {"id": "CWE-259", "link": "https://cwe.mitre.org/data/definitions/259.html"}
+    }
+  ],
+  "metrics": {}
+}

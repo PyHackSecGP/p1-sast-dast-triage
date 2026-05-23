@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.json
+*.md
+!requirements.txt
+!tests/fixtures/*.json
+!tests/fixtures/*.xml

@@ -1,0 +1,2 @@
+# No third-party dependencies — pure Python 3.11+ stdlib only.
+# click is optional for a richer CLI in a future iteration.

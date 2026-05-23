@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "check_id": "python.lang.security.audit.sqli.raw-query-format-string",
+      "path": "app/db.py",
+      "start": {"line": 42, "col": 4},
+      "end": {"line": 42, "col": 60},
+      "extra": {
+        "severity": "ERROR",
+        "message": "Detected SQL statement formatted with a Python string. This is vulnerable to SQL injection. Use parameterized queries instead.",
+        "lines": "    cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")",
+        "metadata": {
+          "cwe": ["CWE-89"],
+          "tags": ["security", "sqli"]
+        }
+      }
+    },
+    {
+      "check_id": "python.flask.security.audit.hardcoded-secret",
+      "path": "config.py",
+      "start": {"line": 8, "col": 1},
+      "end": {"line": 8, "col": 40},
+      "extra": {
+        "severity": "WARNING",
+        "message": "Hardcoded secret key detected. Move this to an environment variable.",
+        "lines": "SECRET_KEY = 'super-secret-hardcoded-key-123'",
+        "metadata": {
+          "cwe": ["CWE-798"],
+          "tags": ["security", "secrets"]
+        }
+      }
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<OWASPZAPReport version="2.14.0">
+  <site name="http://localhost:5000" host="localhost" port="5000" ssl="false">
+    <alerts>
+      <alertitem>
+        <pluginid>40012</pluginid>
+        <alert>Cross Site Scripting (Reflected)</alert>
+        <riskcode>3</riskcode>
+        <confidence>2</confidence>
+        <riskdesc>High (Medium)</riskdesc>
+        <desc>Cross-site Scripting (XSS) is an attack where malicious scripts are injected into otherwise benign and trusted web sites.</desc>
+        <solution>Phase: Architecture and Design — Use a vetted library or framework that does not allow this weakness to occur or provides constructs that make this weakness easier to avoid.</solution>
+        <cweid>79</cweid>
+        <wascid>8</wascid>
+        <instances>
+          <instance>
+            <uri>http://localhost:5000/search?q=test</uri>
+            <method>GET</method>
+            <param>q</param>
+            <evidence>&lt;script&gt;alert(1)&lt;/script&gt;</evidence>
+          </instance>
+        </instances>
+      </alertitem>
+      <alertitem>
+        <pluginid>10021</pluginid>
+        <alert>X-Content-Type-Options Header Missing</alert>
+        <riskcode>1</riskcode>
+        <confidence>2</confidence>
+        <riskdesc>Low (Medium)</riskdesc>
+        <desc>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to nosniff.</desc>
+        <solution>Ensure that the application/web server sets the Content-Type header appropriately.</solution>
+        <cweid>693</cweid>
+        <wascid>15</wascid>
+        <url>http://localhost:5000/</url>
+      </alertitem>
+    </alerts>
+  </site>
+</OWASPZAPReport>

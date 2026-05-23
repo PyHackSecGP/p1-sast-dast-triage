@@ -3,8 +3,7 @@ __pycache__/
 *.pyo
 venv/
 .env
-*.json
-*.md
-!requirements.txt
-!tests/fixtures/*.json
-!tests/fixtures/*.xml
+report.json
+report.md
+tests/fixtures/*.json
+tests/fixtures/*.xml

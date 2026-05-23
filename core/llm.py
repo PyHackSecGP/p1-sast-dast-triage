@@ -2,19 +2,39 @@
 from __future__ import annotations
 
 import json
+import os
+import socket
 import urllib.error
 import urllib.request
 
 from parsers.base import Finding
 
 OLLAMA_URL = "http://100.126.22.55:11434/api/generate"
-MODEL = "llama3.1:70b"
+MODEL = "llama3.2:3b"   # 3B model stays loaded between calls; override with TRIAGE_MODEL env var
+TIMEOUT = 300
 
 _SYSTEM = (
     "You are a senior application security engineer reviewing SAST/DAST scanner findings. "
     "Classify each finding as a true positive or false positive. "
     "Respond ONLY with a JSON object: {\"verdict\": \"true_positive\" | \"false_positive\", \"reason\": \"<one sentence>\"}"
 )
+
+
+def _extract_json(text: str) -> dict:
+    """Extract the first valid JSON object from model output."""
+    start = text.find("{")
+    if start == -1:
+        raise ValueError("No JSON object found in response")
+    # Walk forward from the first { to find the matching }
+    depth = 0
+    for i, ch in enumerate(text[start:], start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return json.loads(text[start:i + 1])
+    raise ValueError("Unmatched braces in response")
 
 
 def _build_prompt(f: Finding) -> str:
@@ -34,8 +54,9 @@ def _build_prompt(f: Finding) -> str:
 
 
 def _query_ollama(prompt: str) -> dict:
+    model = os.environ.get("TRIAGE_MODEL", MODEL)
     payload = json.dumps({
-        "model": MODEL,
+        "model": model,
         "prompt": f"{_SYSTEM}\n\n{prompt}",
         "stream": False,
     }).encode()
@@ -45,8 +66,14 @@ def _query_ollama(prompt: str) -> dict:
         data=payload,
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return json.loads(resp.read())
+    # Use default socket timeout so long inference runs don't get cut off.
+    prev = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(TIMEOUT)
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+    finally:
+        socket.setdefaulttimeout(prev)
 
 
 def filter_false_positives(
@@ -64,10 +91,7 @@ def filter_false_positives(
         try:
             result = _query_ollama(_build_prompt(f))
             response_text = result.get("response", "")
-            # Extract JSON from response (model may wrap it in markdown fences)
-            start = response_text.find("{")
-            end = response_text.rfind("}") + 1
-            verdict_data = json.loads(response_text[start:end])
+            verdict_data = _extract_json(response_text)
             f.false_positive = verdict_data.get("verdict") == "false_positive"
             f.fp_reason = verdict_data.get("reason", "")
             if verbose:

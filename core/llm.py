@@ -41,7 +41,7 @@ def _build_prompt(f: Finding) -> str:
     parts = [
         f"Scanner: {f.scanner}",
         f"Rule: {f.rule_id}",
-        f"Severity: {f.severity} (CVSS {f.cvss_score})",
+        f"Severity: {f.severity} (Risk Score {f.risk_score})",
         f"File: {f.file_path}" + (f":{f.line_number}" if f.line_number else ""),
         f"Finding: {f.title}",
         f"Message: {f.message}",
@@ -92,10 +92,12 @@ def filter_false_positives(
             result = _query_ollama(_build_prompt(f))
             response_text = result.get("response", "")
             verdict_data = _extract_json(response_text)
-            f.false_positive = verdict_data.get("verdict") == "false_positive"
+            is_fp = verdict_data.get("verdict") == "false_positive"
+            f.false_positive = is_fp
             f.fp_reason = verdict_data.get("reason", "")
+            f.status = "likely_fp" if is_fp else "confirmed"
             if verbose:
-                label = "FP" if f.false_positive else "TP"
+                label = "FP" if is_fp else "TP"
                 print(f"[{label}] {f.fp_reason[:60]}")
         except (urllib.error.URLError, json.JSONDecodeError, ValueError) as e:
             if verbose:

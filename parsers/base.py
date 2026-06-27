@@ -21,19 +21,30 @@ class Finding:
     message: str
     file_path: str
     line_number: int
-    cvss_score: float = 0.0
+    # CWE-based heuristic score (0–10). NOT a computed CVSS vector.
+    risk_score: float = 0.0
     code_snippet: str = ""
     url: str = ""          # for ZAP web findings
     cwe: str = ""
     tags: list[str] = field(default_factory=list)
     false_positive: bool | None = None   # None = unreviewed
     fp_reason: str = ""
+    # LLM triage status: confirmed | needs_review | likely_fp
+    status: str = "confirmed"
     raw: dict[str, Any] = field(default_factory=dict)
 
     @property
     def id(self) -> str:
-        """Stable hash used for deduplication across scanners."""
-        key = f"{self.rule_id}:{self.file_path}:{self.line_number}"
+        """Stable hash for cross-scanner deduplication.
+
+        Uses CWE + location when available so Semgrep and Bandit findings
+        for the same vulnerability (e.g. CWE-89 at app.py:42) collapse to
+        one entry. Falls back to rule_id + location for scanners without CWE.
+        """
+        if self.cwe:
+            key = f"{self.cwe}:{self.file_path}:{self.line_number}"
+        else:
+            key = f"{self.rule_id}:{self.file_path}:{self.line_number}"
         return hashlib.sha256(key.encode()).hexdigest()[:16]
 
     @property

@@ -15,8 +15,8 @@ _SEVERITY_EMOJI = {
 def write_markdown(findings: list[Finding], path: str) -> None:
     """Write findings as a Markdown report to path."""
     sorted_findings = sorted(findings, key=lambda f: f.severity_rank)
-    true_positives = [f for f in sorted_findings if f.false_positive is not True]
-    false_positives = [f for f in sorted_findings if f.false_positive is True]
+    true_positives = [f for f in sorted_findings if f.status != "likely_fp"]
+    false_positives = [f for f in sorted_findings if f.status == "likely_fp"]
 
     lines = [
         "# SAST+DAST Triage Report\n",
@@ -63,12 +63,12 @@ def _findings_table(findings: list[Finding]) -> str:
         rows.append(
             f"| {_SEVERITY_EMOJI.get(f.severity, '')} {f.severity.upper()} "
             f"| `{f.rule_id}` | {f.scanner} | {f.title} "
-            f"| `{loc}` | {f.cvss_score} | {fp_label} |"
+            f"| `{loc}` | {f.risk_score} | {fp_label} |"
         )
 
     header = (
         "## Findings\n\n"
-        "| Severity | Rule | Scanner | Title | Location | CVSS | Notes |\n"
+        "| Severity | Rule | Scanner | Title | Location | Risk Score | Notes |\n"
         "|---|---|---|---|---|---|---|\n"
     )
     detail_sections = "\n\n".join(_finding_detail(f) for f in findings)
@@ -80,7 +80,7 @@ def _finding_detail(f: Finding) -> str:
     lines = [
         f"### {_SEVERITY_EMOJI.get(f.severity, '')} {f.title}",
         f"**Scanner:** {f.scanner} | **Rule:** `{f.rule_id}` | "
-        f"**Severity:** {f.severity.upper()} | **CVSS:** {f.cvss_score}",
+        f"**Severity:** {f.severity.upper()} | **Risk Score:** {f.risk_score}",
         f"**Location:** `{loc}`",
         "",
         f.message,

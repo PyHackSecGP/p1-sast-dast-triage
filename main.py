@@ -5,8 +5,8 @@ import argparse
 import sys
 
 from parsers import PARSERS
-from core import deduplicate, assign_cvss, filter_false_positives
-from output import write_json, write_markdown
+from core import deduplicate, assign_risk_score, filter_false_positives
+from output import write_json, write_markdown, write_sarif
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
         help="Output file path without extension (default: report)",
     )
     p.add_argument(
-        "--format", "-f", choices=["json", "markdown", "both"], default="both",
+        "--format", "-f", choices=["json", "markdown", "sarif", "both"], default="both",
         help="Output format (default: both)",
     )
     p.add_argument(
@@ -51,16 +51,15 @@ def main() -> None:
     if args.verbose:
         print(f"[+] {len(findings)} findings after deduplication")
 
-    findings = assign_cvss(findings)
+    findings = assign_risk_score(findings)
 
     if args.llm:
         if args.verbose:
             print(f"[+] Running LLM false-positive filter ({len(findings)} findings)...")
         findings = filter_false_positives(findings, verbose=args.verbose)
-        fp_count = sum(1 for f in findings if f.false_positive)
+        fp_count = sum(1 for f in findings if f.status == "likely_fp")
         if args.verbose:
-            print(f"[+] {fp_count} false positives identified")
-        findings = [f for f in findings if not f.false_positive]
+            print(f"[+] {fp_count} likely false positives tagged (kept in report)")
 
     if args.format in ("json", "both"):
         out = f"{args.output}.json"
@@ -73,6 +72,12 @@ def main() -> None:
         write_markdown(findings, out)
         if args.verbose:
             print(f"[+] Markdown report written to {out}")
+
+    if args.format == "sarif":
+        out = f"{args.output}.sarif"
+        write_sarif(findings, out)
+        if args.verbose:
+            print(f"[+] SARIF report written to {out}")
 
     # Always print summary to stdout
     by_sev: dict[str, int] = {}

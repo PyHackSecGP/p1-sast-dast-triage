@@ -1,4 +1,4 @@
-"""Tests for deduplication and CVSS scoring."""
+"""Tests for deduplication and risk scoring."""
 import os
 import sys
 
@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from parsers import SemgrepParser, BanditParser
 from core.dedup import deduplicate
-from core.scorer import assign_cvss
+from core.scorer import assign_risk_score
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -21,29 +21,30 @@ def test_dedup_same_scanner():
 
 
 def test_dedup_cross_scanner():
-    """Same file/line finding from two scanners keeps higher severity."""
+    """CWE-based dedup collapses same vuln reported by two scanners."""
     semgrep = SemgrepParser().parse(f"{FIXTURES}/semgrep_sample.json")
     bandit = BanditParser().parse(f"{FIXTURES}/bandit_sample.json")
-    # Both have a finding at app/db.py:42 (sqli) — same rule_id logic won't
-    # deduplicate different rule_ids, which is correct behaviour.
+    # Semgrep and Bandit both flag CWE-89 at app/db.py:42 — dedup collapses to one.
     combined = semgrep + bandit
     result = deduplicate(combined)
-    assert len(result) == len(combined)  # different rule_ids, no dedup expected
-    print(f"  dedup cross-scanner (different rule_ids): {len(combined)} findings kept OK")
+    assert len(result) == len(combined) - 1, (
+        f"Expected {len(combined) - 1} findings after cross-scanner dedup, got {len(result)}"
+    )
+    print(f"  dedup cross-scanner: {len(combined)} → {len(result)} OK")
 
 
-def test_cvss_scoring():
+def test_risk_scoring():
     findings = SemgrepParser().parse(f"{FIXTURES}/semgrep_sample.json")
-    scored = assign_cvss(findings)
+    scored = assign_risk_score(findings)
     for f in scored:
-        assert 0.0 <= f.cvss_score <= 10.0
+        assert 0.0 <= f.risk_score <= 10.0
     sqli = scored[0]
-    assert sqli.cvss_score > 7.0, f"Expected high CVSS for SQLi, got {sqli.cvss_score}"
-    print(f"  CVSS scoring: sqli={sqli.cvss_score}, secret={scored[1].cvss_score} OK")
+    assert sqli.risk_score > 7.0, f"Expected high risk score for SQLi, got {sqli.risk_score}"
+    print(f"  risk scoring: sqli={sqli.risk_score}, secret={scored[1].risk_score} OK")
 
 
 if __name__ == "__main__":
     test_dedup_same_scanner()
     test_dedup_cross_scanner()
-    test_cvss_scoring()
+    test_risk_scoring()
     print("\nAll dedup/scoring tests passed.")

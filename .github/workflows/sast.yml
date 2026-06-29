@@ -1,0 +1,53 @@
+name: SAST Triage CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  sast-triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install scanners
+        run: pip install semgrep bandit
+
+      - name: Run tests
+        run: python -m pytest tests/ -v
+
+      - name: Run Semgrep
+        # exit code 1 = findings found (not an error); || true keeps the step green
+        run: semgrep scan --config=auto --json --output semgrep_results.json . || true
+
+      - name: Run Bandit
+        run: bandit -r . -f json -o bandit_results.json --exit-zero
+
+      - name: Triage Semgrep output → SARIF
+        run: python3 main.py -i semgrep_results.json -s semgrep -o report_semgrep -f sarif
+
+      - name: Triage Bandit output → SARIF
+        run: python3 main.py -i bandit_results.json -s bandit -o report_bandit -f sarif
+
+      - name: Upload Semgrep SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report_semgrep.sarif
+          category: semgrep-triage
+
+      - name: Upload Bandit SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report_bandit.sarif
+          category: bandit-triage

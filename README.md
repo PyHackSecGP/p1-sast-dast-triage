@@ -87,7 +87,7 @@ fp_reason     LLM explanation
 
 ## LLM Integration
 
-Uses the local Ollama instance at `http://100.126.22.55:11434`. Each finding is sent with full context (scanner, rule, severity, code snippet, CWE) and the model returns a verdict + one-sentence reason. Findings classified as false positives are excluded from the final report.
+Uses a local Ollama instance (default `http://localhost:11434`, override via `OLLAMA_HOST` env var). Each finding is sent with full context (scanner, rule, severity, code snippet, CWE) and the model returns a verdict + one-sentence reason. Findings classified as false positives are excluded from the final report.
 
 Default model: `llama3.2:3b` (stays resident, fast inference). Override with `TRIAGE_MODEL=llama3.1:70b` for higher accuracy.
 

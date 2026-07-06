@@ -9,8 +9,9 @@ import urllib.request
 
 from parsers.base import Finding
 
-OLLAMA_URL = "http://100.126.22.55:11434/api/generate"
-MODEL = "llama3.2:3b"   # 3B model stays loaded between calls; override with TRIAGE_MODEL env var
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+OLLAMA_URL = f"{OLLAMA_HOST}/api/generate"
+MODEL = os.environ.get("TRIAGE_MODEL", "llama3.2:3b")   # 3B stays loaded between calls
 TIMEOUT = 300
 
 _SYSTEM = (

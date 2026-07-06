@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
-from .base import BaseParser, Finding
+from .base import BaseParser, Finding, normalize_cwe
 
 
 class ZapParser(BaseParser):
@@ -21,8 +21,7 @@ class ZapParser(BaseParser):
 
             rule_id = alert.findtext("pluginid", "unknown")
             title = alert.findtext("alert", "unknown")
-            cwe_id = alert.findtext("cweid", "")
-            cwe = f"CWE-{cwe_id}" if cwe_id else ""
+            cwe = normalize_cwe(alert.findtext("cweid", ""))
 
             # One finding per affected URL instance
             for instance in alert.findall(".//instance"):

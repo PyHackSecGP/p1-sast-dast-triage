@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from .base import BaseParser, Finding
+from .base import BaseParser, Finding, normalize_cwe
 
 
 class NucleiParser(BaseParser):
@@ -26,12 +26,7 @@ class NucleiParser(BaseParser):
             info = rec.get("info", {})
             severity = self._normalize_severity(info.get("severity", "info"))
 
-            # CWE — nuclei stores as list of strings like ["CWE-79"]
-            cwe_raw = info.get("classification", {}).get("cwe-id", [])
-            if isinstance(cwe_raw, list):
-                cwe = cwe_raw[0].replace("CWE-", "") if cwe_raw else ""
-            else:
-                cwe = str(cwe_raw).replace("CWE-", "")
+            cwe = normalize_cwe(info.get("classification", {}).get("cwe-id", ""))
 
             # Host + matched-at give us the URL; extract a pseudo file_path
             matched_at = rec.get("matched-at", rec.get("host", ""))

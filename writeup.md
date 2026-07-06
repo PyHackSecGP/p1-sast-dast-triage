@@ -16,7 +16,7 @@ Two findings are duplicates if they point to the same root cause: same rule, sam
 Real CVSS scoring requires 8 attack vector metrics that static analysis can't determine without runtime context. Instead, severity bands map to baseline scores (critical=9.5, high=7.5, medium=5.5, low=2.5) with CWE-specific bumps for highly exploitable categories (SQLi, command injection, hardcoded credentials). This gives useful signal without pretending to be precise.
 
 ### LLM as FP Filter, Not Oracle
-The LLM layer (claw-core Ollama) doesn't replace human review — it filters obvious false positives. The model receives the full finding context (scanner, rule, severity, code snippet, CWE) and classifies TP vs FP with a reason. Findings the model can't classify (API error, malformed response) stay in the report as "unreviewed" rather than being silently dropped. This is the right failure mode: show everything, flag uncertainty.
+The LLM layer (local Ollama) doesn't replace human review — it filters obvious false positives. The model receives the full finding context (scanner, rule, severity, code snippet, CWE) and classifies TP vs FP with a reason. Findings the model can't classify (API error, malformed response) stay in the report as "unreviewed" rather than being silently dropped. This is the right failure mode: show everything, flag uncertainty.
 
 ### Model Selection
 `llama3.2:3b` is the default rather than `llama3.1:70b`. The FP classification task is simple enough that a 3B model handles it correctly (tested: SQLi and hardcoded secret both classified TP). The 70B model adds latency without meaningfully better results for binary classification with clear evidence in the prompt. Override is available via `TRIAGE_MODEL` env var.

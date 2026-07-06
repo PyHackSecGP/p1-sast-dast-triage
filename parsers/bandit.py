@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from .base import BaseParser, Finding
+from .base import BaseParser, Finding, normalize_cwe
 
 
 class BanditParser(BaseParser):
@@ -27,7 +27,7 @@ class BanditParser(BaseParser):
                 file_path=issue.get("filename", ""),
                 line_number=issue.get("line_number", 0),
                 code_snippet=issue.get("code", "").strip(),
-                cwe=issue.get("issue_cwe", {}).get("id", ""),
+                cwe=normalize_cwe(issue.get("issue_cwe", "")),
                 tags=[issue.get("test_name", "")],
                 raw=issue,
             ))

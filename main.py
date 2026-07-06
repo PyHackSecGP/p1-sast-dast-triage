@@ -28,7 +28,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--llm", action="store_true",
-        help="Run LLM false-positive filter via claw-core (slower)",
+        help="Run LLM false-positive filter (uses local Ollama; slower)",
     )
     p.add_argument("--verbose", "-v", action="store_true")
     return p.parse_args()

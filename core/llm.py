@@ -1,4 +1,4 @@
-"""LLM-powered false positive filter using claw-core Ollama endpoint."""
+"""LLM-powered false positive filter using a local Ollama endpoint."""
 from __future__ import annotations
 
 import json
@@ -81,7 +81,7 @@ def filter_false_positives(
     findings: list[Finding],
     verbose: bool = False,
 ) -> list[Finding]:
-    """Run each finding through claw-core LLM and tag false positives.
+    """Run each finding through the local LLM and tag false positives.
 
     Findings that fail the LLM call are left unreviewed (false_positive=None)
     rather than dropped, so the user can still see them.

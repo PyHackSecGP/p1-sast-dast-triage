@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from .base import BaseParser, Finding
+from .base import BaseParser, Finding, normalize_cwe
 
 
 class SemgrepParser(BaseParser):
@@ -19,8 +19,7 @@ class SemgrepParser(BaseParser):
             meta = extra.get("metadata", {})
 
             severity = self._normalize_severity(extra.get("severity", "info"))
-            cwe_raw = meta.get("cwe", [])
-            cwe = cwe_raw[0] if isinstance(cwe_raw, list) and cwe_raw else str(cwe_raw)
+            cwe = normalize_cwe(meta.get("cwe", ""))
 
             findings.append(Finding(
                 scanner="semgrep",

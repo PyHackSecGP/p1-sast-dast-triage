@@ -2,12 +2,44 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
 
 SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+
+_CWE_RE = re.compile(r"(?:CWE[-_]?)?(\d{1,5})", re.IGNORECASE)
+
+
+def normalize_cwe(raw: object) -> str:
+    """Canonicalize any scanner's CWE identifier to ``CWE-<number>``.
+
+    Accepts:
+        ``"CWE-89: Improper Neutralization of Special Elements..."``
+        ``"CWE-89"``, ``"cwe_89"``, ``"89"``, ``89``
+        ``{"id": 89, "link": "..."}`` (Bandit >=1.7.3)
+        ``["CWE-89", "CWE-564"]``  (Semgrep/Trivy/Nuclei list form)
+
+    Returns ``""`` when no CWE number can be extracted. The output form is
+    stable across scanners so ``Finding.id`` collapses cross-scanner duplicates
+    for the same weakness at the same location.
+    """
+    if raw is None or raw == "":
+        return ""
+    if isinstance(raw, list):
+        for item in raw:
+            result = normalize_cwe(item)
+            if result:
+                return result
+        return ""
+    if isinstance(raw, dict):
+        return normalize_cwe(raw.get("id", ""))
+    match = _CWE_RE.search(str(raw))
+    if not match:
+        return ""
+    return f"CWE-{int(match.group(1))}"
 
 
 @dataclass

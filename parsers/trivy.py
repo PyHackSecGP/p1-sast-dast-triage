@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from .base import BaseParser, Finding
+from .base import BaseParser, Finding, normalize_cwe
 
 
 class TrivyParser(BaseParser):
@@ -30,14 +30,7 @@ class TrivyParser(BaseParser):
                 installed = vuln.get("InstalledVersion", "")
                 fixed = vuln.get("FixedVersion", "")
 
-                # CWE from CVSS data
-                cwe = ""
-                for _, cvss_data in (vuln.get("CVSS") or {}).items():
-                    if isinstance(cvss_data, dict):
-                        break
-                cwe_list = vuln.get("CweIDs", []) or []
-                if cwe_list:
-                    cwe = cwe_list[0].replace("CWE-", "")
+                cwe = normalize_cwe(vuln.get("CweIDs", []))
 
                 msg = vuln.get("Description", "").strip()
                 if fixed:
@@ -60,8 +53,7 @@ class TrivyParser(BaseParser):
             for misconf in result.get("Misconfigurations", []) or []:
                 severity = self._normalize_severity(misconf.get("Severity", "LOW"))
                 check_id = misconf.get("ID", "unknown")
-                cwe_list = misconf.get("CWEs", []) or []
-                cwe = cwe_list[0].replace("CWE-", "") if cwe_list else ""
+                cwe = normalize_cwe(misconf.get("CWEs", []))
 
                 findings.append(Finding(
                     scanner="trivy",
@@ -86,7 +78,7 @@ class TrivyParser(BaseParser):
                     message=secret.get("Match", "").strip(),
                     file_path=target,
                     line_number=secret.get("StartLine", 0),
-                    cwe="798",
+                    cwe="CWE-798",
                     tags=["secret", secret.get("Category", "")],
                     raw=secret,
                 ))

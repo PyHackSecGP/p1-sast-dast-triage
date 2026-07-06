@@ -7,7 +7,7 @@ Aggregates scanner output from Semgrep, Bandit, and OWASP ZAP into a single dedu
 - **Multi-scanner ingestion** — Semgrep JSON, Bandit JSON, OWASP ZAP XML
 - **Deduplication** — identical findings across scanners collapsed by rule+file+line hash
 - **CVSS scoring** — automated base scores with CWE-based severity nudges
-- **LLM false-positive filter** — each finding sent to local Ollama (claw-core) for TP/FP classification
+- **LLM false-positive filter** — each finding sent to a local Ollama endpoint for TP/FP classification
 - **Dual output** — JSON (machine-readable) and Markdown (human-readable report)
 - **Zero pip dependencies** — pure Python 3.11+ stdlib
 
@@ -35,7 +35,7 @@ python3 main.py -i zap_report.xml -s zap -o triage_report --llm
 | `--scanner / -s` | `semgrep` \| `bandit` \| `zap` (required) |
 | `--output / -o` | Output path without extension (default: `report`) |
 | `--format / -f` | `json` \| `markdown` \| `both` (default: `both`) |
-| `--llm` | Enable LLM false-positive filter via claw-core |
+| `--llm` | Enable LLM false-positive filter (uses `$OLLAMA_HOST` or `http://localhost:11434`) |
 | `--verbose / -v` | Show per-finding progress |
 
 ### Environment Variables

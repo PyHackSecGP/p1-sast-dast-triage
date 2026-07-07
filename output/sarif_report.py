@@ -80,6 +80,7 @@ def _build_results(findings: list[Finding]) -> list[dict[str, Any]]:
             "rank": _SEVERITY_TO_RANK.get(f.severity.lower(), 0.0),
             "properties": {
                 "scanner": f.scanner,
+                "sources": f.sources,
                 "status": f.status,
                 "risk_score": f.risk_score,
             },

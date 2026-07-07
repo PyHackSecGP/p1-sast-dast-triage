@@ -64,9 +64,20 @@ class Finding:
     tags: list[str] = field(default_factory=list)
     false_positive: bool | None = None   # None = unreviewed
     fp_reason: str = ""
-    # LLM triage status: confirmed | needs_review | likely_fp
+    # LLM triage status: confirmed | likely_fp | unreviewed | suppressed
     status: str = "confirmed"
+    # Cross-scanner agreement trail. Seeded per parser to ``["<scanner>:<rule_id>"]``.
+    # Dedup merges every duplicate scanner's entry in here so the report keeps
+    # the strongest true-positive signal we have.
+    sources: list[str] = field(default_factory=list)
     raw: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        # Seed sources so callers that build a Finding directly (parsers,
+        # tests) get a sensible default without having to duplicate the
+        # scanner+rule_id combination themselves.
+        if not self.sources and self.scanner and self.rule_id:
+            self.sources = [f"{self.scanner}:{self.rule_id}"]
 
     @property
     def id(self) -> str:

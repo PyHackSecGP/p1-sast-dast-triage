@@ -60,15 +60,16 @@ def _findings_table(findings: list[Finding]) -> str:
         if f.false_positive is None:
             fp_label = "⚠ unreviewed"
         loc = f.file_path + (f":{f.line_number}" if f.line_number else "")
+        sources_label = f"×{len(f.sources)}" if len(f.sources) > 1 else ""
         rows.append(
             f"| {_SEVERITY_EMOJI.get(f.severity, '')} {f.severity.upper()} "
-            f"| `{f.rule_id}` | {f.scanner} | {f.title} "
+            f"| `{f.rule_id}` | {f.scanner} {sources_label} | {f.title} "
             f"| `{loc}` | {f.risk_score} | {fp_label} |"
         )
 
     header = (
         "## Findings\n\n"
-        "| Severity | Rule | Scanner | Title | Location | Risk Score | Notes |\n"
+        "| Severity | Rule | Scanners | Title | Location | Risk Score | Notes |\n"
         "|---|---|---|---|---|---|---|\n"
     )
     detail_sections = "\n\n".join(_finding_detail(f) for f in findings)
@@ -82,9 +83,10 @@ def _finding_detail(f: Finding) -> str:
         f"**Scanner:** {f.scanner} | **Rule:** `{f.rule_id}` | "
         f"**Severity:** {f.severity.upper()} | **Risk Score:** {f.risk_score}",
         f"**Location:** `{loc}`",
-        "",
-        f.message,
     ]
+    if len(f.sources) > 1:
+        lines.append(f"**Reported by:** {', '.join(f'`{s}`' for s in f.sources)}")
+    lines += ["", f.message]
     if f.cwe:
         lines.append(f"\n**CWE:** {f.cwe}")
     if f.code_snippet:

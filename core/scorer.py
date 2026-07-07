@@ -25,10 +25,23 @@ _CWE_BUMPS: dict[str, float] = {
 }
 
 
+#: Reward per *additional* agreeing scanner beyond the first source. Two
+#: scanners flagging the same weakness is a much stronger signal than one.
+_AGREEMENT_BUMP = 0.5
+
+
 def assign_risk_score(findings: list[Finding]) -> list[Finding]:
-    """Assign risk_score to each finding in-place and return the list."""
+    """Assign ``risk_score`` to each finding in-place and return the list.
+
+    Score = severity baseline + CWE exploitability bump + agreement bump.
+    Agreement bump is ``_AGREEMENT_BUMP`` per extra source (i.e. per scanner
+    that also flagged this same finding after :func:`deduplicate` merged them).
+    Final score is clamped to ``[0, 10]``.
+    """
     for f in findings:
         base = _SEVERITY_RISK.get(f.severity.lower(), 0.0)
         bump = _CWE_BUMPS.get(f.cwe, 0.0)
-        f.risk_score = min(10.0, round(base + bump, 1))
+        extra_sources = max(0, len(f.sources) - 1)
+        agreement = _AGREEMENT_BUMP * extra_sources
+        f.risk_score = min(10.0, round(base + bump + agreement, 1))
     return findings

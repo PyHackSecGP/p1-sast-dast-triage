@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sast-dast-triage"
+version = "0.2.0"
+description = "Multi-scanner SAST/DAST findings triage: dedupe, score, LLM false-positive filter, SARIF export."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "GP Singh" }]
+keywords = ["security", "sast", "dast", "sarif", "triage", "semgrep", "bandit", "zap", "trivy", "nuclei"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+]
+# Runtime dependencies: stdlib only. Zero pip deps at runtime is a feature.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "jsonschema>=4.20",
+]
+
+[project.scripts]
+triage = "main:main"
+
+[project.urls]
+Homepage = "https://github.com/PyHackSecGP/p1-sast-dast-triage"
+Repository = "https://github.com/PyHackSecGP/p1-sast-dast-triage"
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+include = ["core*", "parsers*", "output*", "kev*"]
+exclude = ["tests*", "scripts*", "data*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["core", "parsers"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_covered = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]  # line-length handled by formatter
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["core", "parsers"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true

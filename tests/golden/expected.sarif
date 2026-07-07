@@ -1,0 +1,821 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "sast-dast-triage",
+          "version": "1.0.0",
+          "informationUri": "https://github.com/gpsingh/p1-sast-dast-triage",
+          "rules": [
+            {
+              "id": "python.lang.security.audit.sqli.raw-query-format-string",
+              "name": "raw-query-format-string",
+              "shortDescription": {
+                "text": "raw-query-format-string"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "sqli"
+                ],
+                "security-severity": "9.0"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-89",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "python.flask.security.audit.hardcoded-secret",
+              "name": "hardcoded-secret",
+              "shortDescription": {
+                "text": "hardcoded-secret"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "secrets"
+                ],
+                "security-severity": "6.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-798",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "B105",
+              "name": "hardcoded_password_string",
+              "shortDescription": {
+                "text": "hardcoded_password_string"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": [
+                  "hardcoded_password_string"
+                ],
+                "security-severity": "2.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-259",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "40012",
+              "name": "Cross Site Scripting (Reflected)",
+              "shortDescription": {
+                "text": "Cross Site Scripting (Reflected)"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "8"
+                ],
+                "security-severity": "8.0"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-79",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "10021",
+              "name": "X-Content-Type-Options Header Missing",
+              "shortDescription": {
+                "text": "X-Content-Type-Options Header Missing"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": [
+                  "15"
+                ],
+                "security-severity": "2.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-693",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "CVE-2023-52425",
+              "name": "CVE-2023-52425: libexpat 2.5.0-r0",
+              "shortDescription": {
+                "text": "CVE-2023-52425: libexpat 2.5.0-r0"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "alpine",
+                  "libexpat",
+                  "https://nvd.nist.gov/vuln/detail/CVE-2023-52425"
+                ],
+                "security-severity": "7.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-611",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "CVE-2022-1000",
+              "name": "CVE-2022-1000: openssl 3.0.0",
+              "shortDescription": {
+                "text": "CVE-2022-1000: openssl 3.0.0"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "alpine",
+                  "openssl"
+                ],
+                "security-severity": "9.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-125",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "DS002",
+              "name": "Image user should not be 'root'",
+              "shortDescription": {
+                "text": "Image user should not be 'root'"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "dockerfile",
+                  "Dockerfile Security Check"
+                ],
+                "security-severity": "7.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-250",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "aws-access-key-id",
+              "name": "AWS Access Key ID",
+              "shortDescription": {
+                "text": "AWS Access Key ID"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "secret",
+                  "AWS"
+                ],
+                "security-severity": "8.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-798",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "CVE-2022-0778",
+              "name": "OpenSSL 3.0.0-3.0.2 - Denial of Service",
+              "shortDescription": {
+                "text": "OpenSSL 3.0.0-3.0.2 - Denial of Service"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "cve",
+                  "cve2022",
+                  "openssl"
+                ],
+                "security-severity": "7.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-835",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "wordpress-detect",
+              "name": "WordPress Detection",
+              "shortDescription": {
+                "text": "WordPress Detection"
+              },
+              "defaultConfiguration": {
+                "level": "none"
+              },
+              "properties": {
+                "tags": [
+                  "tech",
+                  "wordpress"
+                ],
+                "security-severity": "0.0"
+              }
+            },
+            {
+              "id": "git-config",
+              "name": ".git/config Exposure",
+              "shortDescription": {
+                "text": ".git/config Exposure"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "exposure",
+                  "config",
+                  "git"
+                ],
+                "security-severity": "5.5"
+              },
+              "relationships": [
+                {
+                  "target": {
+                    "id": "CWE-538",
+                    "toolComponent": {
+                      "name": "CWE"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "python.lang.security.audit.sqli.raw-query-format-string",
+          "level": "error",
+          "message": {
+            "text": "Detected SQL statement formatted with a Python string. This is vulnerable to SQL injection. Use parameterized queries instead."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/db.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 42,
+                  "snippet": {
+                    "text": "cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")"
+                  }
+                }
+              }
+            }
+          ],
+          "rank": 7.5,
+          "properties": {
+            "scanner": "semgrep",
+            "sources": [
+              "semgrep:python.lang.security.audit.sqli.raw-query-format-string",
+              "bandit:B608"
+            ],
+            "status": "confirmed",
+            "risk_score": 9.0
+          },
+          "taxa": [
+            {
+              "id": "CWE-89",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "python.flask.security.audit.hardcoded-secret",
+          "level": "warning",
+          "message": {
+            "text": "Hardcoded secret key detected. Move this to an environment variable."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 8,
+                  "snippet": {
+                    "text": "SECRET_KEY = 'super-secret-hardcoded-key-123'"
+                  }
+                }
+              }
+            }
+          ],
+          "rank": 5.5,
+          "properties": {
+            "scanner": "semgrep",
+            "sources": [
+              "semgrep:python.flask.security.audit.hardcoded-secret"
+            ],
+            "status": "confirmed",
+            "risk_score": 6.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-798",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "B105",
+          "level": "note",
+          "message": {
+            "text": "Possible hardcoded password: 'admin123'."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "auth/login.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 15,
+                  "snippet": {
+                    "text": "DEFAULT_PASSWORD = 'admin123'"
+                  }
+                }
+              }
+            }
+          ],
+          "rank": 2.5,
+          "properties": {
+            "scanner": "bandit",
+            "sources": [
+              "bandit:B105"
+            ],
+            "status": "confirmed",
+            "risk_score": 2.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-259",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "40012",
+          "level": "error",
+          "message": {
+            "text": "Cross-site Scripting (XSS) is an attack where malicious scripts are injected into otherwise benign and trusted web sites. Phase: Architecture and Design \u2014 Use a vetted library or framework that does not allow this weakness to occur or provides constructs that make this weakness easier to avoid."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:5000/search?q=test",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1,
+                  "snippet": {
+                    "text": "GET http://localhost:5000/search?q=test\nEvidence: <script>alert(1)</script>"
+                  }
+                }
+              }
+            }
+          ],
+          "rank": 7.5,
+          "properties": {
+            "scanner": "zap",
+            "sources": [
+              "zap:40012"
+            ],
+            "status": "confirmed",
+            "risk_score": 8.0
+          },
+          "taxa": [
+            {
+              "id": "CWE-79",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "10021",
+          "level": "note",
+          "message": {
+            "text": "The Anti-MIME-Sniffing header X-Content-Type-Options was not set to nosniff."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://localhost:5000/",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "rank": 2.5,
+          "properties": {
+            "scanner": "zap",
+            "sources": [
+              "zap:10021"
+            ],
+            "status": "confirmed",
+            "risk_score": 2.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-693",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-52425",
+          "level": "error",
+          "message": {
+            "text": "Expat before 2.6.0 allows a denial of service via oversized XML input. Fixed in: 2.5.0-r1."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "example.local/app:1.0 (alpine 3.18.0)",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "rank": 7.5,
+          "properties": {
+            "scanner": "trivy",
+            "sources": [
+              "trivy:CVE-2023-52425"
+            ],
+            "status": "confirmed",
+            "risk_score": 7.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-611",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-1000",
+          "level": "error",
+          "message": {
+            "text": "Hypothetical critical OpenSSL issue for fixture data. Fixed in: 3.0.7."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "example.local/app:1.0 (alpine 3.18.0)",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "rank": 9.5,
+          "properties": {
+            "scanner": "trivy",
+            "sources": [
+              "trivy:CVE-2022-1000"
+            ],
+            "status": "confirmed",
+            "risk_score": 9.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-125",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "DS002",
+          "level": "error",
+          "message": {
+            "text": "Running containers with 'root' user could lead to a container escape situation."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/Dockerfile",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "rank": 7.5,
+          "properties": {
+            "scanner": "trivy",
+            "sources": [
+              "trivy:DS002"
+            ],
+            "status": "confirmed",
+            "risk_score": 7.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-250",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "aws-access-key-id",
+          "level": "error",
+          "message": {
+            "text": "AKIAIOSFODNN7EXAMPLE"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/config/settings.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "rank": 7.5,
+          "properties": {
+            "scanner": "trivy",
+            "sources": [
+              "trivy:aws-access-key-id"
+            ],
+            "status": "confirmed",
+            "risk_score": 8.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-798",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-0778",
+          "level": "error",
+          "message": {
+            "text": "tls-version"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://example.local/",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "rank": 7.5,
+          "properties": {
+            "scanner": "nuclei",
+            "sources": [
+              "nuclei:CVE-2022-0778"
+            ],
+            "status": "confirmed",
+            "risk_score": 7.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-835",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "wordpress-detect",
+          "level": "none",
+          "message": {
+            "text": "WordPress version detected."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://example.local/wp-login.php",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "rank": 0.0,
+          "properties": {
+            "scanner": "nuclei",
+            "sources": [
+              "nuclei:wordpress-detect"
+            ],
+            "status": "confirmed",
+            "risk_score": 0.0
+          }
+        },
+        {
+          "ruleId": "git-config",
+          "level": "warning",
+          "message": {
+            "text": "A .git/config file was discovered on the server."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "http://example.local/.git/config",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "rank": 5.5,
+          "properties": {
+            "scanner": "nuclei",
+            "sources": [
+              "nuclei:git-config"
+            ],
+            "status": "confirmed",
+            "risk_score": 5.5
+          },
+          "taxa": [
+            {
+              "id": "CWE-538",
+              "toolComponent": {
+                "name": "CWE"
+              }
+            }
+          ]
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2026-07-07T20:44:03Z"
+        }
+      ]
+    }
+  ]
+}

@@ -2,8 +2,20 @@ __pycache__/
 *.pyc
 *.pyo
 venv/
+.venv/
 .env
 report.json
 report.md
+.coverage
+*.egg-info/
+build/
+dist/
+# Test fixtures are hand-curated; each one is force-added.
 tests/fixtures/*.json
 tests/fixtures/*.xml
+tests/fixtures/*.jsonl
+!tests/fixtures/semgrep_sample.json
+!tests/fixtures/bandit_sample.json
+!tests/fixtures/zap_sample.xml
+!tests/fixtures/trivy_sample.json
+!tests/fixtures/nuclei_sample.jsonl

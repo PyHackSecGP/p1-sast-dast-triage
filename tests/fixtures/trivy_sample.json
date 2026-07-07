@@ -1,0 +1,64 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-07-06T12:00:00Z",
+  "ArtifactName": "example.local/app:1.0",
+  "ArtifactType": "container_image",
+  "Results": [
+    {
+      "Target": "example.local/app:1.0 (alpine 3.18.0)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2023-52425",
+          "PkgName": "libexpat",
+          "InstalledVersion": "2.5.0-r0",
+          "FixedVersion": "2.5.0-r1",
+          "Severity": "HIGH",
+          "Title": "expat: parser crash from XML with over 2GB of tokens",
+          "Description": "Expat before 2.6.0 allows a denial of service via oversized XML input.",
+          "CweIDs": ["CWE-611"],
+          "References": ["https://nvd.nist.gov/vuln/detail/CVE-2023-52425"]
+        },
+        {
+          "VulnerabilityID": "CVE-2022-1000",
+          "PkgName": "openssl",
+          "InstalledVersion": "3.0.0",
+          "FixedVersion": "3.0.7",
+          "Severity": "CRITICAL",
+          "Description": "Hypothetical critical OpenSSL issue for fixture data.",
+          "CweIDs": ["CWE-125"]
+        }
+      ]
+    },
+    {
+      "Target": "app/Dockerfile",
+      "Class": "config",
+      "Type": "dockerfile",
+      "Misconfigurations": [
+        {
+          "ID": "DS002",
+          "Type": "Dockerfile Security Check",
+          "Title": "Image user should not be 'root'",
+          "Description": "Running containers with 'root' user could lead to a container escape situation.",
+          "Severity": "HIGH",
+          "StartLine": 12,
+          "CWEs": ["CWE-250"]
+        }
+      ]
+    },
+    {
+      "Target": "app/config/settings.py",
+      "Class": "secret",
+      "Secrets": [
+        {
+          "RuleID": "aws-access-key-id",
+          "Category": "AWS",
+          "Title": "AWS Access Key ID",
+          "Match": "AKIAIOSFODNN7EXAMPLE",
+          "StartLine": 4
+        }
+      ]
+    }
+  ]
+}

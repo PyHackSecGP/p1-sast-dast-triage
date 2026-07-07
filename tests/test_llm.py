@@ -2,6 +2,7 @@
 
 Mocks urllib at the boundary — zero network.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,6 +19,7 @@ from core.llm import _extract_json, filter_false_positives
 from parsers.base import Finding
 
 # ── _extract_json ─────────────────────────────────────────────────────────────
+
 
 def test_extract_clean_json() -> None:
     assert _extract_json('{"verdict": "true_positive", "reason": "reachable"}') == {
@@ -60,10 +62,11 @@ def test_extract_truncated_json_raises() -> None:
 
 def test_extract_malformed_json_raises_json_decode() -> None:
     with pytest.raises(json.JSONDecodeError):
-        _extract_json('{verdict: no_quotes}')
+        _extract_json("{verdict: no_quotes}")
 
 
 # ── filter_false_positives ────────────────────────────────────────────────────
+
 
 def _make_finding() -> Finding:
     return Finding(

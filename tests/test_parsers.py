@@ -1,4 +1,5 @@
 """Tests for scanner output parsers — one per supported scanner."""
+
 from __future__ import annotations
 
 import os
@@ -12,6 +13,7 @@ FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 # ── Semgrep ───────────────────────────────────────────────────────────────────
+
 
 def test_semgrep_parser() -> None:
     findings = SemgrepParser().parse(f"{FIXTURES}/semgrep_sample.json")
@@ -27,6 +29,7 @@ def test_semgrep_parser() -> None:
 
 # ── Bandit ────────────────────────────────────────────────────────────────────
 
+
 def test_bandit_parser() -> None:
     findings = BanditParser().parse(f"{FIXTURES}/bandit_sample.json")
     assert len(findings) == 2
@@ -40,6 +43,7 @@ def test_bandit_parser() -> None:
 
 # ── ZAP ───────────────────────────────────────────────────────────────────────
 
+
 def test_zap_parser() -> None:
     findings = ZapParser().parse(f"{FIXTURES}/zap_sample.xml")
     assert len(findings) == 2
@@ -50,6 +54,7 @@ def test_zap_parser() -> None:
 
 
 # ── Trivy ─────────────────────────────────────────────────────────────────────
+
 
 def test_trivy_parser_covers_vuln_misconfig_secret() -> None:
     """Real Trivy output mixes three finding classes in the same file."""
@@ -77,6 +82,7 @@ def test_trivy_parser_covers_vuln_misconfig_secret() -> None:
 
 # ── Nuclei ────────────────────────────────────────────────────────────────────
 
+
 def test_nuclei_parser_jsonl() -> None:
     findings = NucleiParser().parse(f"{FIXTURES}/nuclei_sample.jsonl")
     assert len(findings) == 3
@@ -97,6 +103,7 @@ def test_nuclei_parser_jsonl() -> None:
 
 
 # ── Cross-parser invariants ───────────────────────────────────────────────────
+
 
 def test_finding_id_stability() -> None:
     """Same rule+file+line should always produce the same ID."""
@@ -125,6 +132,7 @@ def test_every_parser_seeds_sources() -> None:
 
 def test_every_parser_produces_canonical_severity() -> None:
     from parsers.base import BaseParser
+
     parsers_and_fixtures = [
         (SemgrepParser(), "semgrep_sample.json"),
         (BanditParser(), "bandit_sample.json"),

@@ -1,4 +1,5 @@
 """OWASP ZAP XML output parser."""
+
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
@@ -29,36 +30,42 @@ class ZapParser(BaseParser):
                 method = instance.findtext("method", "")
                 evidence = instance.findtext("evidence", "")
 
-                findings.append(Finding(
-                    scanner="zap",
-                    rule_id=rule_id,
-                    title=title,
-                    severity=severity,
-                    message=f"{alert.findtext('desc', '').strip()} {alert.findtext('solution', '').strip()}".strip(),
-                    file_path=uri,
-                    line_number=0,
-                    url=uri,
-                    code_snippet=f"{method} {uri}\nEvidence: {evidence}".strip() if evidence else "",
-                    cwe=cwe,
-                    tags=[alert.findtext("wascid", "")],
-                    raw={"pluginid": rule_id, "uri": uri, "method": method},
-                ))
+                findings.append(
+                    Finding(
+                        scanner="zap",
+                        rule_id=rule_id,
+                        title=title,
+                        severity=severity,
+                        message=f"{alert.findtext('desc', '').strip()} {alert.findtext('solution', '').strip()}".strip(),
+                        file_path=uri,
+                        line_number=0,
+                        url=uri,
+                        code_snippet=f"{method} {uri}\nEvidence: {evidence}".strip()
+                        if evidence
+                        else "",
+                        cwe=cwe,
+                        tags=[alert.findtext("wascid", "")],
+                        raw={"pluginid": rule_id, "uri": uri, "method": method},
+                    )
+                )
 
             # If no instances, emit one finding for the alert itself
             if not alert.findall(".//instance"):
                 uri = alert.findtext("url", "")
-                findings.append(Finding(
-                    scanner="zap",
-                    rule_id=rule_id,
-                    title=title,
-                    severity=severity,
-                    message=alert.findtext("desc", "").strip(),
-                    file_path=uri,
-                    line_number=0,
-                    url=uri,
-                    cwe=cwe,
-                    tags=[alert.findtext("wascid", "")],
-                    raw={"pluginid": rule_id, "uri": uri},
-                ))
+                findings.append(
+                    Finding(
+                        scanner="zap",
+                        rule_id=rule_id,
+                        title=title,
+                        severity=severity,
+                        message=alert.findtext("desc", "").strip(),
+                        file_path=uri,
+                        line_number=0,
+                        url=uri,
+                        cwe=cwe,
+                        tags=[alert.findtext("wascid", "")],
+                        raw={"pluginid": rule_id, "uri": uri},
+                    )
+                )
 
         return findings

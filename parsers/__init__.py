@@ -1,4 +1,5 @@
 """Scanner output parsers."""
+
 from .bandit import BanditParser
 from .base import Finding
 from .nuclei import NucleiParser
@@ -14,4 +15,12 @@ PARSERS = {
     "trivy": TrivyParser,
 }
 
-__all__ = ["PARSERS", "BanditParser", "Finding", "NucleiParser", "SemgrepParser", "TrivyParser", "ZapParser"]
+__all__ = [
+    "PARSERS",
+    "BanditParser",
+    "Finding",
+    "NucleiParser",
+    "SemgrepParser",
+    "TrivyParser",
+    "ZapParser",
+]

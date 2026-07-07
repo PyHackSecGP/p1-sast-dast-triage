@@ -1,4 +1,5 @@
 """Severity normalization — canonical five-level output for every scanner token."""
+
 from __future__ import annotations
 
 import logging
@@ -29,33 +30,33 @@ def parser() -> _Concrete:
     [
         # Canonical passthrough
         ("critical", "critical"),
-        ("high",     "high"),
-        ("medium",   "medium"),
-        ("low",      "low"),
-        ("info",     "info"),
+        ("high", "high"),
+        ("medium", "medium"),
+        ("low", "low"),
+        ("info", "info"),
         ("informational", "info"),
         # Case-insensitive
         ("CRITICAL", "critical"),
-        ("High",     "high"),
+        ("High", "high"),
         # Whitespace tolerance
-        (" high ",   "high"),
+        (" high ", "high"),
         # Semgrep
-        ("error",    "high"),
-        ("ERROR",    "high"),
-        ("warning",  "medium"),
-        ("WARNING",  "medium"),
+        ("error", "high"),
+        ("ERROR", "high"),
+        ("warning", "medium"),
+        ("WARNING", "medium"),
         # Trivy / Nuclei
-        ("unknown",  "info"),
-        ("UNKNOWN",  "info"),
+        ("unknown", "info"),
+        ("UNKNOWN", "info"),
         # ZAP riskcode (both str and int)
         ("3", "high"),
         ("2", "medium"),
         ("1", "low"),
         ("0", "info"),
-        (3,   "high"),
-        (2,   "medium"),
-        (1,   "low"),
-        (0,   "info"),
+        (3, "high"),
+        (2, "medium"),
+        (1, "low"),
+        (0, "info"),
     ],
 )
 def test_every_documented_token_maps_to_canonical(
@@ -70,9 +71,7 @@ def test_unknown_token_defaults_to_info(parser: _Concrete) -> None:
     assert parser._normalize_severity("apocalyptic") == "info"
 
 
-def test_unknown_token_logs_warning(
-    parser: _Concrete, caplog: pytest.LogCaptureFixture
-) -> None:
+def test_unknown_token_logs_warning(parser: _Concrete, caplog: pytest.LogCaptureFixture) -> None:
     """Unknown severities must never crash — they log and default to info."""
     with caplog.at_level(logging.WARNING, logger="parsers.base"):
         result = parser._normalize_severity("cataclysmic")
@@ -91,4 +90,5 @@ def test_canonical_set_matches_severity_order() -> None:
     """The rank map must cover every canonical severity — otherwise sorting
     and 'fail-on' comparisons produce silently wrong results."""
     from parsers.base import SEVERITY_ORDER
+
     assert set(BaseParser.CANONICAL_SEVERITIES) == set(SEVERITY_ORDER.keys())

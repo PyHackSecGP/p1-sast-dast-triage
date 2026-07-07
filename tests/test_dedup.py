@@ -1,4 +1,5 @@
 """Tests for deduplication (merge semantics) and risk scoring."""
+
 from __future__ import annotations
 
 import os
@@ -28,6 +29,7 @@ def _finding(scanner: str, rule_id: str, severity: str = "high", **kw) -> Findin
 
 # ── same-scanner dedup ────────────────────────────────────────────────────────
 
+
 def test_dedup_same_scanner_collapses_duplicates() -> None:
     findings = SemgrepParser().parse(f"{FIXTURES}/semgrep_sample.json")
     duped = findings + findings
@@ -44,6 +46,7 @@ def test_dedup_same_scanner_source_stays_singleton() -> None:
 
 
 # ── cross-scanner merge ───────────────────────────────────────────────────────
+
 
 def test_dedup_cross_scanner_merges_sources() -> None:
     """Two scanners agree — the survivor carries both sources."""
@@ -85,7 +88,8 @@ def test_dedup_prefers_longest_message() -> None:
 def test_dedup_prefers_longest_code_snippet() -> None:
     a = _finding("semgrep", "sqli", code_snippet="x=1")
     b = _finding(
-        "bandit", "B608",
+        "bandit",
+        "B608",
         code_snippet='cursor.execute("SELECT * FROM users WHERE id = " + user_id)',
     )
     merged = deduplicate([a, b])[0]
@@ -105,6 +109,7 @@ def test_dedup_from_fixtures_end_to_end() -> None:
 
 
 # ── scorer ────────────────────────────────────────────────────────────────────
+
 
 def test_risk_scoring_baseline() -> None:
     findings = SemgrepParser().parse(f"{FIXTURES}/semgrep_sample.json")
@@ -132,10 +137,7 @@ def test_agreement_boosts_score() -> None:
 
 def test_agreement_score_capped_at_ten() -> None:
     """A critical CWE-89 finding with many agreeing scanners still tops out at 10.0."""
-    findings = [
-        _finding(f"scanner{i}", f"rule{i}", severity="critical")
-        for i in range(10)
-    ]
+    findings = [_finding(f"scanner{i}", f"rule{i}", severity="critical") for i in range(10)]
     merged = deduplicate(findings)
     assign_risk_score(merged)
     assert merged[0].risk_score == 10.0

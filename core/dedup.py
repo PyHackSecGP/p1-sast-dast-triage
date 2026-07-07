@@ -9,6 +9,7 @@ into a single :class:`Finding` whose :attr:`sources` list carries every
 scanner+rule that reported it, whose severity is the max across duplicates,
 and whose narrative fields (message, code_snippet) are the longest available.
 """
+
 from __future__ import annotations
 
 from parsers.base import Finding

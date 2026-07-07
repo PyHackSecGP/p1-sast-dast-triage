@@ -5,6 +5,7 @@ Run after intentionally changing report output. Diff before committing:
     python3 scripts/update_goldens.py
     git diff tests/golden/
 """
+
 from __future__ import annotations
 
 import os

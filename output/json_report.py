@@ -1,4 +1,5 @@
 """JSON report output."""
+
 from __future__ import annotations
 
 import json
@@ -21,7 +22,7 @@ def write_json(findings: list[Finding], path: str) -> None:
 def _finding_dict(f: Finding) -> dict:
     d = asdict(f)
     d["id"] = f.id
-    d.pop("raw", None)   # raw scanner output bloats the report
+    d.pop("raw", None)  # raw scanner output bloats the report
     return d
 
 

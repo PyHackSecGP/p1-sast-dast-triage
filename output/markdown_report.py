@@ -1,4 +1,5 @@
 """Markdown report output."""
+
 from __future__ import annotations
 
 from parsers.base import SEVERITY_ORDER, Finding
@@ -98,11 +99,9 @@ def _finding_detail(f: Finding) -> str:
 
 def _fp_section(findings: list[Finding]) -> str:
     rows = "\n".join(
-        f"| {f.scanner} | `{f.rule_id}` | {f.title} | {f.fp_reason} |"
-        for f in findings
+        f"| {f.scanner} | `{f.rule_id}` | {f.title} | {f.fp_reason} |" for f in findings
     )
     return (
         "## Filtered False Positives\n\n"
-        "| Scanner | Rule | Title | Reason |\n|---|---|---|---|\n"
-        + rows + "\n"
+        "| Scanner | Rule | Title | Reason |\n|---|---|---|---|\n" + rows + "\n"
     )

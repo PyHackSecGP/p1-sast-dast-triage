@@ -1,4 +1,5 @@
 """Nuclei JSON/JSONL output parser."""
+
 from __future__ import annotations
 
 import json
@@ -32,18 +33,21 @@ class NucleiParser(BaseParser):
             matched_at = rec.get("matched-at", rec.get("host", ""))
             template_id = rec.get("template-id", "unknown")
 
-            findings.append(Finding(
-                scanner="nuclei",
-                rule_id=template_id,
-                title=info.get("name", template_id),
-                severity=severity,
-                message=rec.get("matcher-name", info.get("description", "")).strip(),
-                file_path=matched_at,
-                line_number=0,
-                url=matched_at,
-                cwe=cwe,
-                tags=info.get("tags", []) if isinstance(info.get("tags"), list)
-                     else [t.strip() for t in str(info.get("tags", "")).split(",") if t.strip()],
-                raw=rec,
-            ))
+            findings.append(
+                Finding(
+                    scanner="nuclei",
+                    rule_id=template_id,
+                    title=info.get("name", template_id),
+                    severity=severity,
+                    message=rec.get("matcher-name", info.get("description", "")).strip(),
+                    file_path=matched_at,
+                    line_number=0,
+                    url=matched_at,
+                    cwe=cwe,
+                    tags=info.get("tags", [])
+                    if isinstance(info.get("tags"), list)
+                    else [t.strip() for t in str(info.get("tags", "")).split(",") if t.strip()],
+                    raw=rec,
+                )
+            )
         return findings

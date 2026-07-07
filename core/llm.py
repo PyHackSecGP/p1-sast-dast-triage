@@ -1,4 +1,5 @@
 """LLM-powered false positive filter using a local Ollama endpoint."""
+
 from __future__ import annotations
 
 import json
@@ -15,13 +16,13 @@ log = logging.getLogger(__name__)
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
 OLLAMA_URL = f"{OLLAMA_HOST}/api/generate"
-MODEL = os.environ.get("TRIAGE_MODEL", "llama3.2:3b")   # 3B stays loaded between calls
+MODEL = os.environ.get("TRIAGE_MODEL", "llama3.2:3b")  # 3B stays loaded between calls
 TIMEOUT = 300
 
 _SYSTEM = (
     "You are a senior application security engineer reviewing SAST/DAST scanner findings. "
     "Classify each finding as a true positive or false positive. "
-    "Respond ONLY with a JSON object: {\"verdict\": \"true_positive\" | \"false_positive\", \"reason\": \"<one sentence>\"}"
+    'Respond ONLY with a JSON object: {"verdict": "true_positive" | "false_positive", "reason": "<one sentence>"}'
 )
 
 
@@ -45,7 +46,7 @@ def _extract_json(text: str) -> dict[str, Any]:
         elif ch == "}":
             depth -= 1
             if depth == 0:
-                parsed: dict[str, Any] = json.loads(text[start:i + 1])
+                parsed: dict[str, Any] = json.loads(text[start : i + 1])
                 return parsed
     raise ValueError("Unmatched braces in response")
 
@@ -68,11 +69,13 @@ def _build_prompt(f: Finding) -> str:
 
 def _query_ollama(prompt: str) -> dict[str, Any]:
     model = os.environ.get("TRIAGE_MODEL", MODEL)
-    payload = json.dumps({
-        "model": model,
-        "prompt": f"{_SYSTEM}\n\n{prompt}",
-        "stream": False,
-    }).encode()
+    payload = json.dumps(
+        {
+            "model": model,
+            "prompt": f"{_SYSTEM}\n\n{prompt}",
+            "stream": False,
+        }
+    ).encode()
 
     req = urllib.request.Request(
         OLLAMA_URL,
@@ -118,8 +121,13 @@ def filter_false_positives(
             f.fp_reason = verdict_data.get("reason", "")
             f.status = "likely_fp" if is_fp else "confirmed"
             log.debug("  -> %s: %s", "FP" if is_fp else "TP", f.fp_reason[:60])
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError,
-                ValueError, KeyError) as e:
+        except (
+            urllib.error.URLError,
+            TimeoutError,
+            json.JSONDecodeError,
+            ValueError,
+            KeyError,
+        ) as e:
             # LLM never produced a usable verdict — mark unreviewed rather
             # than leaving the default "confirmed", which would falsely
             # imply a human/model looked at it.

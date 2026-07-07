@@ -4,6 +4,7 @@ Runs parse -> dedupe -> score -> write on the combined fixture data and
 compares the emitted Markdown / SARIF against golden files. If the pipeline
 changes intentionally, regenerate the goldens via ``scripts/update_goldens.py``.
 """
+
 from __future__ import annotations
 
 import json
@@ -66,8 +67,7 @@ def test_pipeline_matches_golden(tmp_path, writer, ext) -> None:
         assert actual_doc == expected_doc
     else:
         assert actual == expected, (
-            "Golden mismatch. Regenerate with scripts/update_goldens.py "
-            "or diff manually."
+            "Golden mismatch. Regenerate with scripts/update_goldens.py or diff manually."
         )
 
 
@@ -76,6 +76,7 @@ def test_pipeline_shape() -> None:
     findings = _run_pipeline()
     # Every finding has a canonical severity + non-empty sources.
     from parsers.base import BaseParser
+
     for f in findings:
         assert f.severity in BaseParser.CANONICAL_SEVERITIES
         assert f.sources

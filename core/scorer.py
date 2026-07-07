@@ -1,4 +1,5 @@
 """CWE-based heuristic risk score assignment for normalized findings."""
+
 from __future__ import annotations
 
 from parsers.base import Finding
@@ -14,13 +15,13 @@ _SEVERITY_RISK: dict[str, float] = {
 
 # CWE nudges: bump score up if CWE implies higher exploitability.
 _CWE_BUMPS: dict[str, float] = {
-    "CWE-89": 1.0,   # SQL injection
-    "CWE-79": 0.5,   # XSS
-    "CWE-78": 1.0,   # OS command injection
-    "CWE-22": 0.5,   # path traversal
-    "CWE-94": 1.0,   # code injection
-    "CWE-502": 0.75, # deserialization
-    "CWE-287": 0.75, # improper authentication
+    "CWE-89": 1.0,  # SQL injection
+    "CWE-79": 0.5,  # XSS
+    "CWE-78": 1.0,  # OS command injection
+    "CWE-22": 0.5,  # path traversal
+    "CWE-94": 1.0,  # code injection
+    "CWE-502": 0.75,  # deserialization
+    "CWE-287": 0.75,  # improper authentication
     "CWE-798": 1.0,  # hardcoded credentials
 }
 

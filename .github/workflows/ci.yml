@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  quality:
+    name: quality (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # OPSEC scan needs full history when we expand it
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install project + dev deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
+      - name: Lint (ruff)
+        run: ruff check --output-format=github
+
+      - name: Format check (ruff)
+        run: ruff format --check
+
+      - name: Type check (mypy --strict)
+        run: mypy core parsers
+
+      - name: Test with coverage
+        run: |
+          pytest -q --cov=core --cov=parsers --cov-branch --cov-report=term-missing --cov-fail-under=85
+
+      - name: Verify triage entry point
+        run: |
+          triage --version
+          triage --help > /dev/null
+
+  opsec:
+    name: opsec (no internal IPs / hostnames)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan tracked files for CGNAT / homelab identifiers
+        shell: bash
+        run: |
+          set -euo pipefail
+          # CGNAT range 100.64.0.0/10 covers 100.64.x.x through 100.127.x.x.
+          # The workflow file itself is excluded because its scan patterns
+          # match themselves — the intent is to catch leaks in source, not
+          # in the guard.
+          BAD=$(git ls-files -z \
+            | grep -zv '^.github/workflows/ci.yml$' \
+            | xargs -0 grep -EIn \
+              -e '100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.' \
+              -e '(?i)tailscal|\.ts\.net|claw[- ]?core' \
+              || true)
+          if [ -n "$BAD" ]; then
+            echo "OPSEC violation — internal identifier in tracked source:"
+            echo "$BAD"
+            exit 1
+          fi
+          echo "OK: no internal IPs or hostnames in tracked files."

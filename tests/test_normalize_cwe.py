@@ -1,4 +1,5 @@
 """Tests for parsers.base.normalize_cwe — the cross-scanner CWE canonicalizer."""
+
 from __future__ import annotations
 
 import os

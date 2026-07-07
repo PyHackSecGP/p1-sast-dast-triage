@@ -1,4 +1,5 @@
 """Bandit JSON output parser."""
+
 from __future__ import annotations
 
 import json
@@ -18,17 +19,19 @@ class BanditParser(BaseParser):
             # Bandit reports severity and confidence separately; we use severity.
             severity = self._normalize_severity(issue.get("issue_severity", "LOW"))
 
-            findings.append(Finding(
-                scanner="bandit",
-                rule_id=issue.get("test_id", "unknown"),
-                title=issue.get("test_name", "unknown"),
-                severity=severity,
-                message=issue.get("issue_text", "").strip(),
-                file_path=issue.get("filename", ""),
-                line_number=issue.get("line_number", 0),
-                code_snippet=issue.get("code", "").strip(),
-                cwe=normalize_cwe(issue.get("issue_cwe", "")),
-                tags=[issue.get("test_name", "")],
-                raw=issue,
-            ))
+            findings.append(
+                Finding(
+                    scanner="bandit",
+                    rule_id=issue.get("test_id", "unknown"),
+                    title=issue.get("test_name", "unknown"),
+                    severity=severity,
+                    message=issue.get("issue_text", "").strip(),
+                    file_path=issue.get("filename", ""),
+                    line_number=issue.get("line_number", 0),
+                    code_snippet=issue.get("code", "").strip(),
+                    cwe=normalize_cwe(issue.get("issue_cwe", "")),
+                    tags=[issue.get("test_name", "")],
+                    raw=issue,
+                )
+            )
         return findings

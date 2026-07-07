@@ -1,4 +1,5 @@
 """SARIF 2.1.0 report output for GitHub code scanning integration."""
+
 from __future__ import annotations
 
 import json
@@ -7,7 +8,9 @@ from typing import Any
 
 from parsers.base import Finding
 
-_SARIF_SCHEMA = "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+_SARIF_SCHEMA = (
+    "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+)
 _SARIF_VERSION = "2.1.0"
 
 _SEVERITY_TO_LEVEL = {
@@ -93,7 +96,10 @@ def _build_results(findings: list[Finding]) -> list[dict[str, Any]]:
             }
         if f.status == "likely_fp":
             result["suppressions"] = [
-                {"kind": "inSource", "justification": f.fp_reason or "LLM flagged as likely false positive"}
+                {
+                    "kind": "inSource",
+                    "justification": f.fp_reason or "LLM flagged as likely false positive",
+                }
             ]
         results.append(result)
     return results

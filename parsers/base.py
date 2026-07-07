@@ -1,4 +1,5 @@
 """Base finding schema and abstract parser interface."""
+
 from __future__ import annotations
 
 import hashlib
@@ -52,17 +53,17 @@ class Finding:
     scanner: str
     rule_id: str
     title: str
-    severity: str          # critical | high | medium | low | info
+    severity: str  # critical | high | medium | low | info
     message: str
     file_path: str
     line_number: int
     # CWE-based heuristic score (0-10). NOT a computed CVSS vector.
     risk_score: float = 0.0
     code_snippet: str = ""
-    url: str = ""          # for ZAP web findings
+    url: str = ""  # for ZAP web findings
     cwe: str = ""
     tags: list[str] = field(default_factory=list)
-    false_positive: bool | None = None   # None = unreviewed
+    false_positive: bool | None = None  # None = unreviewed
     fp_reason: str = ""
     # LLM triage status: confirmed | likely_fp | unreviewed | suppressed
     status: str = "confirmed"
@@ -123,22 +124,22 @@ class BaseParser(ABC):
     #:   - Nuclei:  ``critical/high/medium/low/info`` pass-through, ``unknown→info``.
     SEVERITY_MAP: ClassVar[dict[str, str]] = {
         # Canonical passthrough
-        "critical":     "critical",
-        "high":         "high",
-        "medium":       "medium",
-        "low":          "low",
-        "info":         "info",
+        "critical": "critical",
+        "high": "high",
+        "medium": "medium",
+        "low": "low",
+        "info": "info",
         "informational": "info",
         # Semgrep
-        "error":        "high",
-        "warning":      "medium",
+        "error": "high",
+        "warning": "medium",
         # Trivy / Nuclei
-        "unknown":      "info",
+        "unknown": "info",
         # ZAP riskcode
-        "3":            "high",
-        "2":            "medium",
-        "1":            "low",
-        "0":            "info",
+        "3": "high",
+        "2": "medium",
+        "1": "low",
+        "0": "info",
     }
 
     def _normalize_severity(self, raw: str | int) -> str:
@@ -152,7 +153,8 @@ class BaseParser(ABC):
         if mapped is None:
             _log.warning(
                 "%s: unknown severity token %r, defaulting to 'info'",
-                type(self).__name__, raw,
+                type(self).__name__,
+                raw,
             )
             return "info"
         return mapped

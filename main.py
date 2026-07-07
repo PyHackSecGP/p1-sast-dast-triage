@@ -1,4 +1,5 @@
 """SAST+DAST Triage Tool — CLI entry point."""
+
 from __future__ import annotations
 
 import argparse
@@ -52,27 +53,40 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--version", action="version", version=f"%(prog)s {_tool_version()}")
     p.add_argument("--input", "-i", required=True, help="Path to scanner output file")
     p.add_argument(
-        "--scanner", "-s", required=True, choices=list(PARSERS),
+        "--scanner",
+        "-s",
+        required=True,
+        choices=list(PARSERS),
         help="Scanner that produced the output",
     )
     p.add_argument(
-        "--output", "-o", default="report",
+        "--output",
+        "-o",
+        default="report",
         help="Output file path without extension (default: report)",
     )
     p.add_argument(
-        "--format", "-f", choices=["json", "markdown", "sarif", "both"], default="both",
+        "--format",
+        "-f",
+        choices=["json", "markdown", "sarif", "both"],
+        default="both",
         help="Output format (default: both)",
     )
     p.add_argument(
-        "--llm", action="store_true",
+        "--llm",
+        action="store_true",
         help="Run LLM false-positive filter (uses local Ollama; slower)",
     )
     p.add_argument(
-        "-v", "--verbose", action="count", default=0,
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
         help="-v: DEBUG on triage logger; -vv: DEBUG everywhere",
     )
     p.add_argument(
-        "--quiet", action="store_true",
+        "--quiet",
+        action="store_true",
         help="Suppress per-stage progress (WARNING and above only)",
     )
     return p.parse_args()
@@ -100,7 +114,9 @@ def main() -> None:
         unreviewed = sum(1 for f in findings if f.status == "unreviewed")
         log.info(
             "LLM: %d likely FP, %d unreviewed (LLM error), %d confirmed (kept in report)",
-            fp_count, unreviewed, len(findings) - fp_count - unreviewed,
+            fp_count,
+            unreviewed,
+            len(findings) - fp_count - unreviewed,
         )
 
     if args.format in ("json", "both"):

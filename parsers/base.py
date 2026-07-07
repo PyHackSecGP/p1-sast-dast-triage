@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
+
+_log = logging.getLogger(__name__)
 
 
 SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
@@ -92,13 +95,53 @@ class BaseParser(ABC):
         """Parse scanner output file and return normalized findings."""
         ...
 
-    def _normalize_severity(self, raw: str) -> str:
-        """Map scanner-specific severity strings to canonical levels."""
-        mapping = {
-            "critical": "critical", "high": "high", "medium": "medium",
-            "low": "low", "info": "info", "informational": "info",
-            "warning": "medium", "error": "high",
-            # zap risk codes
-            "3": "high", "2": "medium", "1": "low", "0": "info",
-        }
-        return mapping.get(raw.strip().lower(), mapping.get(raw.strip(), "info"))
+    #: Canonical severity levels, ranked. Every parser must produce one of these.
+    CANONICAL_SEVERITIES = ("critical", "high", "medium", "low", "info")
+
+    #: One central mapping table for every scanner's severity strings.
+    #: Keys are lowercased. Values are one of ``CANONICAL_SEVERITIES``.
+    #:
+    #: Mapping per scanner:
+    #:   - Semgrep: ``ERROR→high``, ``WARNING→medium``, ``INFO→info``. Metadata
+    #:     ``impact``+``confidence`` may lift ``WARNING`` to ``critical`` in the
+    #:     Semgrep parser after the base call — that upgrade is intentional and
+    #:     is applied outside this table.
+    #:   - Bandit:  ``HIGH/MEDIUM/LOW → high/medium/low``.
+    #:   - ZAP:     ``riskcode 3→high, 2→medium, 1→low, 0→info``.
+    #:   - Trivy:   ``CRITICAL/HIGH/MEDIUM/LOW/UNKNOWN → critical/high/medium/low/info``.
+    #:   - Nuclei:  ``critical/high/medium/low/info`` pass-through, ``unknown→info``.
+    SEVERITY_MAP: dict[str, str] = {
+        # Canonical passthrough
+        "critical":     "critical",
+        "high":         "high",
+        "medium":       "medium",
+        "low":          "low",
+        "info":         "info",
+        "informational": "info",
+        # Semgrep
+        "error":        "high",
+        "warning":      "medium",
+        # Trivy / Nuclei
+        "unknown":      "info",
+        # ZAP riskcode
+        "3":            "high",
+        "2":            "medium",
+        "1":            "low",
+        "0":            "info",
+    }
+
+    def _normalize_severity(self, raw: str | int) -> str:
+        """Map any scanner's severity token to one of ``CANONICAL_SEVERITIES``.
+
+        Unknown tokens map to ``info`` and log a warning — the parser must
+        never crash on an unfamiliar severity string.
+        """
+        token = str(raw).strip().lower()
+        mapped = self.SEVERITY_MAP.get(token)
+        if mapped is None:
+            _log.warning(
+                "%s: unknown severity token %r, defaulting to 'info'",
+                type(self).__name__, raw,
+            )
+            return "info"
+        return mapped

@@ -17,7 +17,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from core.llm import _extract_json, filter_false_positives
 from parsers.base import Finding
 
-
 # ── _extract_json ─────────────────────────────────────────────────────────────
 
 def test_extract_clean_json() -> None:

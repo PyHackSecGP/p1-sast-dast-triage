@@ -1,7 +1,7 @@
 """Markdown report output."""
 from __future__ import annotations
 
-from parsers.base import Finding, SEVERITY_ORDER
+from parsers.base import SEVERITY_ORDER, Finding
 
 _SEVERITY_EMOJI = {
     "critical": "🔴",
@@ -60,7 +60,7 @@ def _findings_table(findings: list[Finding]) -> str:
         if f.false_positive is None:
             fp_label = "⚠ unreviewed"
         loc = f.file_path + (f":{f.line_number}" if f.line_number else "")
-        sources_label = f"×{len(f.sources)}" if len(f.sources) > 1 else ""
+        sources_label = f"x{len(f.sources)}" if len(f.sources) > 1 else ""
         rows.append(
             f"| {_SEVERITY_EMOJI.get(f.severity, '')} {f.severity.upper()} "
             f"| `{f.rule_id}` | {f.scanner} {sources_label} | {f.title} "

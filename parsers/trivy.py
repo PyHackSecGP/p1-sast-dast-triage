@@ -45,7 +45,7 @@ class TrivyParser(BaseParser):
                     file_path=target,
                     line_number=0,
                     cwe=cwe,
-                    tags=[result_type, pkg] + (vuln.get("References", [])[:1]),
+                    tags=[result_type, pkg, *(vuln.get("References", [])[:1])],
                     raw=vuln,
                 ))
 

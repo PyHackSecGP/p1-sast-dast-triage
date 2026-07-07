@@ -14,4 +14,4 @@ PARSERS = {
     "trivy": TrivyParser,
 }
 
-__all__ = ["Finding", "SemgrepParser", "BanditParser", "ZapParser", "NucleiParser", "TrivyParser", "PARSERS"]
+__all__ = ["PARSERS", "BanditParser", "Finding", "NucleiParser", "SemgrepParser", "TrivyParser", "ZapParser"]

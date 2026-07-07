@@ -66,8 +66,8 @@ def test_pipeline_matches_golden(tmp_path, writer, ext) -> None:
         assert actual_doc == expected_doc
     else:
         assert actual == expected, (
-            f"Golden mismatch. Regenerate with scripts/update_goldens.py "
-            f"or diff manually."
+            "Golden mismatch. Regenerate with scripts/update_goldens.py "
+            "or diff manually."
         )
 
 

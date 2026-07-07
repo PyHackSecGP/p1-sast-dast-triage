@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from parsers.base import Finding
@@ -118,7 +118,7 @@ def write_sarif(findings: list[Finding], path: str, tool_name: str = "sast-dast-
                 "invocations": [
                     {
                         "executionSuccessful": True,
-                        "endTimeUtc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "endTimeUtc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     }
                 ],
             }

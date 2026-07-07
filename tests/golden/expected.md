@@ -23,7 +23,7 @@
 | Severity | Rule | Scanners | Title | Location | Risk Score | Notes |
 |---|---|---|---|---|---|---|
 | 🔴 CRITICAL | `CVE-2022-1000` | trivy  | CVE-2022-1000: openssl 3.0.0 | `example.local/app:1.0 (alpine 3.18.0)` | 9.5 | ⚠ unreviewed |
-| 🟠 HIGH | `python.lang.security.audit.sqli.raw-query-format-string` | semgrep ×2 | raw-query-format-string | `app/db.py:42` | 9.0 | ⚠ unreviewed |
+| 🟠 HIGH | `python.lang.security.audit.sqli.raw-query-format-string` | semgrep x2 | raw-query-format-string | `app/db.py:42` | 9.0 | ⚠ unreviewed |
 | 🟠 HIGH | `40012` | zap  | Cross Site Scripting (Reflected) | `http://localhost:5000/search?q=test` | 8.0 | ⚠ unreviewed |
 | 🟠 HIGH | `CVE-2023-52425` | trivy  | CVE-2023-52425: libexpat 2.5.0-r0 | `example.local/app:1.0 (alpine 3.18.0)` | 7.5 | ⚠ unreviewed |
 | 🟠 HIGH | `DS002` | trivy  | Image user should not be 'root' | `app/Dockerfile:12` | 7.5 | ⚠ unreviewed |

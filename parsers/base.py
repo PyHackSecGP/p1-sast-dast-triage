@@ -6,7 +6,7 @@ import logging
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, ClassVar
 
 _log = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class Finding:
     message: str
     file_path: str
     line_number: int
-    # CWE-based heuristic score (0–10). NOT a computed CVSS vector.
+    # CWE-based heuristic score (0-10). NOT a computed CVSS vector.
     risk_score: float = 0.0
     code_snippet: str = ""
     url: str = ""          # for ZAP web findings
@@ -121,7 +121,7 @@ class BaseParser(ABC):
     #:   - ZAP:     ``riskcode 3→high, 2→medium, 1→low, 0→info``.
     #:   - Trivy:   ``CRITICAL/HIGH/MEDIUM/LOW/UNKNOWN → critical/high/medium/low/info``.
     #:   - Nuclei:  ``critical/high/medium/low/info`` pass-through, ``unknown→info``.
-    SEVERITY_MAP: dict[str, str] = {
+    SEVERITY_MAP: ClassVar[dict[str, str]] = {
         # Canonical passthrough
         "critical":     "critical",
         "high":         "high",

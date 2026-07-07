@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import socket
 import urllib.error
 import urllib.request
+from typing import Any
 
 from parsers.base import Finding
+
+log = logging.getLogger(__name__)
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
 OLLAMA_URL = f"{OLLAMA_HOST}/api/generate"
@@ -21,7 +25,7 @@ _SYSTEM = (
 )
 
 
-def _extract_json(text: str) -> dict:
+def _extract_json(text: str) -> dict[str, Any]:
     """Extract the first valid JSON object from model output.
 
     Small models (llama3.2:3b) frequently wrap JSON in prose or emit a
@@ -41,7 +45,8 @@ def _extract_json(text: str) -> dict:
         elif ch == "}":
             depth -= 1
             if depth == 0:
-                return json.loads(text[start:i + 1])
+                parsed: dict[str, Any] = json.loads(text[start:i + 1])
+                return parsed
     raise ValueError("Unmatched braces in response")
 
 
@@ -61,7 +66,7 @@ def _build_prompt(f: Finding) -> str:
     return "\n".join(parts)
 
 
-def _query_ollama(prompt: str) -> dict:
+def _query_ollama(prompt: str) -> dict[str, Any]:
     model = os.environ.get("TRIAGE_MODEL", MODEL)
     payload = json.dumps({
         "model": model,
@@ -79,7 +84,8 @@ def _query_ollama(prompt: str) -> dict:
     socket.setdefaulttimeout(TIMEOUT)
     try:
         with urllib.request.urlopen(req) as resp:
-            return json.loads(resp.read())
+            response: dict[str, Any] = json.loads(resp.read())
+            return response
     finally:
         socket.setdefaulttimeout(prev)
 
@@ -93,9 +99,13 @@ def filter_false_positives(
     Findings that fail the LLM call are left unreviewed (false_positive=None)
     rather than dropped, so the user can still see them.
     """
+    # ``verbose`` remains as a parameter for API back-compat, but per-finding
+    # progress now flows through the logging module. Callers wanting the old
+    # streaming output should configure the ``core.llm`` logger at DEBUG.
+    del verbose
+    total = len(findings)
     for i, f in enumerate(findings, 1):
-        if verbose:
-            print(f"  [{i}/{len(findings)}] {f.scanner} — {f.title[:60]}", end=" ... ", flush=True)
+        log.debug("[%d/%d] %s: %s", i, total, f.scanner, f.title[:60])
         try:
             result = _query_ollama(_build_prompt(f))
             response_text = result.get("response", "")
@@ -107,9 +117,7 @@ def filter_false_positives(
             f.false_positive = is_fp
             f.fp_reason = verdict_data.get("reason", "")
             f.status = "likely_fp" if is_fp else "confirmed"
-            if verbose:
-                label = "FP" if is_fp else "TP"
-                print(f"[{label}] {f.fp_reason[:60]}")
+            log.debug("  -> %s: %s", "FP" if is_fp else "TP", f.fp_reason[:60])
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError,
                 ValueError, KeyError) as e:
             # LLM never produced a usable verdict — mark unreviewed rather
@@ -117,6 +125,5 @@ def filter_false_positives(
             # imply a human/model looked at it.
             f.status = "unreviewed"
             f.fp_reason = f"llm_error: {e}"
-            if verbose:
-                print(f"[SKIP — {e}]")
+            log.warning("skip finding %s (llm error: %s)", f.id, e)
     return findings

@@ -22,11 +22,18 @@ _SYSTEM = (
 
 
 def _extract_json(text: str) -> dict:
-    """Extract the first valid JSON object from model output."""
+    """Extract the first valid JSON object from model output.
+
+    Small models (llama3.2:3b) frequently wrap JSON in prose or emit a
+    naked comment when they refuse to classify. Raise ``ValueError`` for
+    every unrecoverable case so callers can leave findings unreviewed
+    rather than crashing the pipeline.
+    """
+    if not text:
+        raise ValueError("Empty response from model")
     start = text.find("{")
     if start == -1:
-        raise ValueError("No JSON object found in response")
-    # Walk forward from the first { to find the matching }
+        raise ValueError("No JSON object in response")
     depth = 0
     for i, ch in enumerate(text[start:], start):
         if ch == "{":
@@ -93,14 +100,23 @@ def filter_false_positives(
             result = _query_ollama(_build_prompt(f))
             response_text = result.get("response", "")
             verdict_data = _extract_json(response_text)
-            is_fp = verdict_data.get("verdict") == "false_positive"
+            verdict = verdict_data.get("verdict")
+            if verdict not in ("true_positive", "false_positive"):
+                raise ValueError(f"Missing/invalid verdict field: {verdict!r}")
+            is_fp = verdict == "false_positive"
             f.false_positive = is_fp
             f.fp_reason = verdict_data.get("reason", "")
             f.status = "likely_fp" if is_fp else "confirmed"
             if verbose:
                 label = "FP" if is_fp else "TP"
                 print(f"[{label}] {f.fp_reason[:60]}")
-        except (urllib.error.URLError, json.JSONDecodeError, ValueError) as e:
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError,
+                ValueError, KeyError) as e:
+            # LLM never produced a usable verdict — mark unreviewed rather
+            # than leaving the default "confirmed", which would falsely
+            # imply a human/model looked at it.
+            f.status = "unreviewed"
+            f.fp_reason = f"llm_error: {e}"
             if verbose:
                 print(f"[SKIP — {e}]")
     return findings

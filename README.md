@@ -1,12 +1,10 @@
 # P1 — SAST+DAST Triage Tool
 
-Security scanners are noisy. Run Semgrep + Bandit + ZAP on any real codebase and you get 200+ findings — 80% duplicates or false positives. No developer fixes 200 findings; they close the ticket.
-
-P1 collapses that noise into a ranked, deduplicated, human-reviewable list with LLM-assisted triage and SARIF output for GitHub code scanning integration.
+Aggregates output from multiple SAST and DAST scanners, deduplicates findings across tool boundaries using CWE normalization, scores by exploitability and cross-scanner agreement, filters false positives via a local LLM, and outputs SARIF for GitHub code scanning integration.
 
 ---
 
-## How It Works
+## Pipeline
 
 ```
 Raw scanner output
@@ -17,114 +15,41 @@ Raw scanner output
       ↓
   3. Score       — CWE heuristic baseline + multi-scanner agreement bump
       ↓
-  4. Suppress    — suppressions.yaml skips test files, vendored code, accepted risks
+  4. Suppress    — suppressions.yaml skips known-good paths and accepted risks
       ↓
-  5. LLM Filter  — local Ollama reviews each finding → verdict + confidence score
+  5. LLM Filter  — local Ollama classifies each finding with verdict + confidence score
       ↓
   Reports: JSON / Markdown / SARIF / HTML
 ```
 
-### Stage 2 — Cross-Scanner Deduplication
+---
 
-The core insight: Semgrep calls SQL injection `python.lang.security.sqli.raw-query-format-string`. Bandit calls it `B608`. Naively hashing by rule ID makes them look like two different findings at the same line.
+## Features
 
-Fix: hash on `CWE + file_path + line_number`. Both scanners emit `CWE-89` — same hash, they merge. The merged finding carries `sources: ["semgrep:...", "bandit:B608"]`.
-
-```python
-# parsers/base.py
-if self.cwe:
-    key = f"{self.cwe}:{self.file_path}:{self.line_number}"
-```
-
-**Why it matters:** like three doctors independently flagging the same shadow on an X-ray. Multi-scanner agreement is the strongest true-positive signal available.
-
-### Stage 3 — Risk Scoring
-
-Not CVSS. A **CWE-based heuristic risk score** (0–10) — honest about what static analysis can and can't know.
-
-| Component | Logic |
-|---|---|
-| Severity baseline | `critical=9.5`, `high=7.5`, `medium=5.5`, `low=2.5` |
-| CWE exploitability bump | SQLi `CWE-89` → `+1.0`, XSS `CWE-79` → `+0.5`, hardcoded creds `CWE-798` → `+1.0` |
-| Agreement bump | `+0.5` per extra scanner that also flagged the same finding |
-
-SQLi flagged by both Semgrep and Bandit at high severity: `7.5 + 1.0 + 0.5 = 9.0/10`.
-
-CVSS requires knowing attack vector, authentication scope, and impact — none of which static analysis can determine without runtime context. A heuristic that's honest about its limits beats a fake CVSS score.
-
-### Stage 4 — Suppression File
-
-`suppressions.yaml` — skip known-good findings before LLM triage:
-
-```yaml
-- file_glob: "tests/*"
-  reason: "Test fixtures, not production code"
-
-- rule_id: B105
-  file_glob: "config/*"
-  reason: "Hardcoded token in config template — not a real secret"
-
-- rule_id: python.lang.security.audit.sqli.raw-query-format-string
-  reason: "Accepted risk — parameterized query confirmed at call site"
-```
-
-Rules: `rule_id` alone, `file_glob` alone, or both together (AND logic). Suppressed findings are **not deleted** — they appear in a dedicated report section so the decision is auditable.
-
-### Stage 5 — LLM False-Positive Filter
-
-Local Ollama (`llama3.2:3b` default). No data leaves the machine — critical for real source code.
-
-LLM receives: scanner, rule, severity, file, line, code snippet, CWE. Returns:
-
-```json
-{
-  "verdict": "false_positive",
-  "confidence": 0.91,
-  "reason": "user_id validated at line 30 before reaching this query"
-}
-```
-
-Three design decisions:
-
-1. **LLM never deletes findings.** Sets `status: "likely_fp"`. Human decides. A 3B local model is not trustworthy enough to silently remove real vulns.
-2. **Confidence score (0–1).** Binary TP/FP from a small model is overconfident. A `0.65` FP warrants review; `0.95` does not.
-3. **Graceful fallback.** Ollama down, model error, no JSON — finding gets `status: "unreviewed"`, not `"confirmed"`. Failing safe keeps the finding visible.
-
-### SARIF Output → GitHub PR Annotations
-
-SARIF is the format GitHub code scanning reads natively. Upload via CI and findings appear as **inline PR annotations** — exactly where the developer sees them during review:
-
-```yaml
-- uses: github/codeql-action/upload-sarif@v3
-  with:
-    sarif_file: report.sarif
-    category: semgrep-triage
-```
-
-That's the difference between a security report nobody reads and a comment on line 42 of the PR they're reviewing right now.
+- **Cross-scanner deduplication** — findings merged by `CWE + file_path + line_number`, not rule ID. Semgrep `python.lang.security.sqli.*` and Bandit `B608` for the same SQLi at the same line collapse to one finding. Multi-scanner agreement is tracked in `sources[]` and lifts the risk score.
+- **CWE-based risk scoring** — severity baseline + exploitability bump per CWE + `+0.5` per additional scanner that agreed. Honest heuristic; not a computed CVSS vector.
+- **Suppression file** — `suppressions.yaml` with `rule_id`, `file_glob`, or both (AND logic). Suppressed findings stay in the report with a reason — no silent drops.
+- **LLM false-positive filter** — local Ollama endpoint, zero data exfiltration. Returns `verdict + confidence (0–1) + reason`. Never deletes findings; sets `status: "likely_fp"` so the human decides. Graceful fallback to `status: "unreviewed"` on model error.
+- **SARIF output** — uploads to GitHub Security tab via `github/codeql-action/upload-sarif`; findings appear as inline PR annotations.
+- **HTML report** — self-contained dark-theme single file, no external dependencies.
+- **5 parsers** — Semgrep JSON, Bandit JSON, OWASP ZAP XML, Trivy JSON, Nuclei JSONL.
 
 ---
 
 ## Usage
 
 ```bash
-# Basic triage (no LLM)
+# Basic triage
 python3 main.py -i results.json -s semgrep -o report
 
-# With LLM filter
+# With LLM false-positive filter
 python3 main.py -i results.json -s semgrep -o report --llm
 
 # With suppression file
 python3 main.py -i results.json -s bandit --suppress suppressions.yaml --llm
 
-# All 4 formats at once (json + markdown + sarif + html)
+# All 4 output formats at once
 python3 main.py -i zap_report.xml -s zap -f all --llm
-
-# Bandit
-python3 main.py -i bandit_output.json -s bandit -o triage_report -f markdown
-
-# OWASP ZAP
-python3 main.py -i zap_report.xml -s zap -o triage_report --llm
 ```
 
 ### Flags
@@ -135,17 +60,56 @@ python3 main.py -i zap_report.xml -s zap -o triage_report --llm
 | `--scanner / -s` | required | `semgrep` \| `bandit` \| `zap` \| `trivy` \| `nuclei` |
 | `--output / -o` | `report` | Output path without extension |
 | `--format / -f` | `both` | `json` \| `markdown` \| `sarif` \| `html` \| `both` \| `all` |
-| `--suppress` | `suppressions.yaml` | Path to suppression file (silently skipped if absent) |
+| `--suppress` | `suppressions.yaml` | Suppression file path (silently skipped if absent) |
 | `--llm` | off | Enable LLM false-positive filter |
-| `-v / -vv` | INFO | `-v` debug on triage logger; `-vv` debug everywhere |
+| `-v / -vv` | INFO | Debug logging (`-vv` for all loggers) |
 | `--quiet` | off | WARNING and above only |
 
 ### Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
-| `OLLAMA_HOST` | `http://localhost:11434` | Ollama endpoint |
-| `TRIAGE_MODEL` | `llama3.2:3b` | Model for FP classification |
+| `OLLAMA_HOST` | `http://localhost:11434` | Ollama endpoint URL |
+| `TRIAGE_MODEL` | `llama3.2:3b` | Model used for FP classification |
+
+---
+
+## Suppression File
+
+```yaml
+# suppressions.yaml
+- file_glob: "tests/*"
+  reason: "Test fixtures, not production code"
+
+- rule_id: B105
+  file_glob: "config/*"
+  reason: "Hardcoded token in config template — not a real secret"
+
+- rule_id: python.lang.security.audit.sqli.raw-query-format-string
+  reason: "Accepted risk — parameterised at call site, reviewed 2026-08-30"
+```
+
+Matching logic: `rule_id` alone, `file_glob` alone, or both fields together (AND). Suppressed findings get `status: "suppressed"` and appear in a dedicated report section for audit visibility.
+
+---
+
+## SARIF → GitHub Code Scanning
+
+```yaml
+# .github/workflows/sast.yml
+- name: Triage Semgrep output
+  run: python3 main.py -i semgrep_results.json -s semgrep -o report_semgrep -f sarif
+
+- name: Upload to GitHub Security tab
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: report_semgrep.sarif
+    category: semgrep-triage
+```
+
+See [`.github/workflows/sast.yml`](.github/workflows/sast.yml) for the full CI workflow.
+
+---
 
 ## Generating Scanner Output
 
@@ -157,9 +121,9 @@ semgrep scan --json --output semgrep_results.json .
 bandit -r . -f json -o bandit_results.json --exit-zero
 
 # OWASP ZAP
-zap.sh -cmd -quickurl http://localhost:5000 -quickout zap_results.xml
+zap.sh -cmd -quickurl http://target -quickout zap_results.xml
 
-# Trivy (container images)
+# Trivy
 trivy image --format json --output trivy_results.json myapp:latest
 
 # Nuclei
@@ -172,44 +136,43 @@ nuclei -u https://target.com -json -o nuclei_results.jsonl
 
 ```
 parsers/
-  base.py          Finding dataclass + normalize_cwe() + BaseParser
-  semgrep.py       Semgrep JSON → Finding list
-  bandit.py        Bandit JSON → Finding list
-  zap.py           OWASP ZAP XML → Finding list
-  trivy.py         Trivy JSON → Finding list
-  nuclei.py        Nuclei JSONL → Finding list
+  base.py            Finding dataclass, normalize_cwe(), BaseParser ABC
+  semgrep.py         Semgrep JSON → Finding list
+  bandit.py          Bandit JSON → Finding list
+  zap.py             OWASP ZAP XML → Finding list
+  trivy.py           Trivy JSON → Finding list
+  nuclei.py          Nuclei JSONL → Finding list
 
 core/
-  dedup.py         Cross-scanner merge by CWE+file+line; tracks sources[]
-  scorer.py        CWE heuristic risk score + agreement bump
-  llm.py           Ollama FP filter; verdict + confidence; never deletes
-  suppression.py   suppressions.yaml loader; rule_id + file_glob matching
+  dedup.py           Cross-scanner merge; preserves sources[] agreement trail
+  scorer.py          CWE heuristic risk score + agreement bump
+  llm.py             Ollama FP filter; confidence score; status-based (no deletes)
+  suppression.py     YAML loader; rule_id + file_glob matching
 
 output/
-  json_report.py   Machine-readable JSON
-  markdown_report.py  Human-readable Markdown with FP + suppressed sections
-  sarif_report.py  SARIF 2.1.0 for GitHub code scanning upload
-  html_report.py   Self-contained dark-theme HTML; no external deps
+  json_report.py     Machine-readable JSON
+  markdown_report.py Markdown with active / likely-FP / suppressed sections
+  sarif_report.py    SARIF 2.1.0 with CWE relationships and suppression entries
+  html_report.py     Self-contained HTML, no external deps
 
-main.py            CLI entry point
+main.py              CLI entry point
 ```
 
 ### Finding Schema
 
-```
-scanner       semgrep | bandit | zap | trivy | nuclei
-rule_id       scanner-specific rule identifier
-severity      critical | high | medium | low | info
-risk_score    float 0.0–10.0 (CWE heuristic, NOT a computed CVSS vector)
-file_path     affected file or URL
-line_number   source line (0 for web findings)
-cwe           normalized CWE-NNN identifier
-sources       ["semgrep:rule", "bandit:B608"] — multi-scanner agreement trail
-status        confirmed | likely_fp | unreviewed | suppressed
-false_positive  True | False | None (unreviewed)
-confidence    float 0.0–1.0 | None (LLM confidence in verdict)
-fp_reason     LLM explanation or suppression reason
-```
+| Field | Type | Description |
+|---|---|---|
+| `scanner` | `str` | Source scanner name |
+| `rule_id` | `str` | Scanner-specific rule identifier |
+| `severity` | `str` | `critical \| high \| medium \| low \| info` |
+| `risk_score` | `float` | 0–10 CWE heuristic (not a computed CVSS vector) |
+| `file_path` | `str` | Affected file or URL |
+| `line_number` | `int` | Source line (0 for web findings) |
+| `cwe` | `str` | Normalised `CWE-NNN` identifier |
+| `sources` | `list[str]` | `["semgrep:rule", "bandit:B608"]` — agreement trail |
+| `status` | `str` | `confirmed \| likely_fp \| unreviewed \| suppressed` |
+| `confidence` | `float \| None` | LLM confidence in verdict (0–1); `None` = unreviewed |
+| `fp_reason` | `str` | LLM explanation or suppression reason |
 
 ---
 
@@ -217,13 +180,7 @@ fp_reason     LLM explanation or suppression reason
 
 ```bash
 python -m pytest tests/ -v          # 90 tests
-python -m pytest tests/ -q          # summary only
+python -m pytest tests/ --cov=core --cov=parsers --cov-branch
 ```
 
-CI runs on Python 3.11 and 3.12 with coverage ≥ 85% and an OPSEC guard that blocks internal IPs/hostnames from reaching tracked files.
-
----
-
-## Why Not Just Use GitHub Advanced Security?
-
-GHAS costs $49/user/month and requires GitHub Enterprise. P1 works on any git host, any scanner, any language, zero cloud dependency, and the LLM filter runs fully local — no source code leaves the machine.
+CI runs on Python 3.11 and 3.12 with coverage ≥ 85% enforced. An OPSEC check blocks internal IPs and hostnames from reaching tracked files.

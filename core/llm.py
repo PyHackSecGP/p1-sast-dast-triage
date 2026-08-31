@@ -21,8 +21,9 @@ TIMEOUT = 300
 
 _SYSTEM = (
     "You are a senior application security engineer reviewing SAST/DAST scanner findings. "
-    "Classify each finding as a true positive or false positive. "
-    'Respond ONLY with a JSON object: {"verdict": "true_positive" | "false_positive", "reason": "<one sentence>"}'
+    "Classify each finding as a true positive or false positive and rate your confidence. "
+    "Respond ONLY with a JSON object: "
+    '{"verdict": "true_positive" | "false_positive", "confidence": <float 0.0-1.0>, "reason": "<one sentence>"}'
 )
 
 
@@ -120,7 +121,18 @@ def filter_false_positives(
             f.false_positive = is_fp
             f.fp_reason = verdict_data.get("reason", "")
             f.status = "likely_fp" if is_fp else "confirmed"
-            log.debug("  -> %s: %s", "FP" if is_fp else "TP", f.fp_reason[:60])
+            raw_conf = verdict_data.get("confidence")
+            if raw_conf is not None:
+                try:
+                    f.confidence = round(max(0.0, min(1.0, float(raw_conf))), 2)
+                except (TypeError, ValueError):
+                    pass
+            log.debug(
+                "  -> %s (conf=%.2f): %s",
+                "FP" if is_fp else "TP",
+                f.confidence if f.confidence is not None else 0.0,
+                f.fp_reason[:60],
+            )
         except (
             urllib.error.URLError,
             TimeoutError,

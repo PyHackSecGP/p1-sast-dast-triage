@@ -89,19 +89,37 @@ def _mock_query(response_text: str):
 
 def test_filter_marks_true_positive() -> None:
     f = _make_finding()
-    with _mock_query('{"verdict": "true_positive", "reason": "reachable via /search"}'):
+    with _mock_query('{"verdict": "true_positive", "confidence": 0.92, "reason": "reachable via /search"}'):
         out = filter_false_positives([f])
     assert out[0].false_positive is False
     assert out[0].status == "confirmed"
     assert out[0].fp_reason == "reachable via /search"
+    assert out[0].confidence == 0.92
 
 
 def test_filter_marks_false_positive() -> None:
     f = _make_finding()
-    with _mock_query('{"verdict": "false_positive", "reason": "user_id validated at line 30"}'):
+    with _mock_query('{"verdict": "false_positive", "confidence": 0.85, "reason": "user_id validated at line 30"}'):
         out = filter_false_positives([f])
     assert out[0].false_positive is True
     assert out[0].status == "likely_fp"
+    assert out[0].confidence == 0.85
+
+
+def test_filter_confidence_clamped() -> None:
+    """Confidence values outside [0, 1] get clamped."""
+    f = _make_finding()
+    with _mock_query('{"verdict": "true_positive", "confidence": 1.5, "reason": "overflow"}'):
+        out = filter_false_positives([f])
+    assert out[0].confidence == 1.0
+
+
+def test_filter_missing_confidence_stays_none() -> None:
+    """LLM that omits confidence field leaves Finding.confidence as None."""
+    f = _make_finding()
+    with _mock_query('{"verdict": "true_positive", "reason": "no confidence given"}'):
+        out = filter_false_positives([f])
+    assert out[0].confidence is None
 
 
 def test_filter_no_brace_leaves_unreviewed() -> None:

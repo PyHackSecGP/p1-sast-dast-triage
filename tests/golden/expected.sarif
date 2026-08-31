@@ -390,7 +390,8 @@
               "bandit:B608"
             ],
             "status": "confirmed",
-            "risk_score": 9.0
+            "risk_score": 9.0,
+            "confidence": null
           },
           "taxa": [
             {
@@ -430,7 +431,8 @@
               "semgrep:python.flask.security.audit.hardcoded-secret"
             ],
             "status": "confirmed",
-            "risk_score": 6.5
+            "risk_score": 6.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -470,7 +472,8 @@
               "bandit:B105"
             ],
             "status": "confirmed",
-            "risk_score": 2.5
+            "risk_score": 2.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -510,7 +513,8 @@
               "zap:40012"
             ],
             "status": "confirmed",
-            "risk_score": 8.0
+            "risk_score": 8.0,
+            "confidence": null
           },
           "taxa": [
             {
@@ -547,7 +551,8 @@
               "zap:10021"
             ],
             "status": "confirmed",
-            "risk_score": 2.5
+            "risk_score": 2.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -584,7 +589,8 @@
               "trivy:CVE-2023-52425"
             ],
             "status": "confirmed",
-            "risk_score": 7.5
+            "risk_score": 7.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -621,7 +627,8 @@
               "trivy:CVE-2022-1000"
             ],
             "status": "confirmed",
-            "risk_score": 9.5
+            "risk_score": 9.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -658,7 +665,8 @@
               "trivy:DS002"
             ],
             "status": "confirmed",
-            "risk_score": 7.5
+            "risk_score": 7.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -695,7 +703,8 @@
               "trivy:aws-access-key-id"
             ],
             "status": "confirmed",
-            "risk_score": 8.5
+            "risk_score": 8.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -732,7 +741,8 @@
               "nuclei:CVE-2022-0778"
             ],
             "status": "confirmed",
-            "risk_score": 7.5
+            "risk_score": 7.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -769,7 +779,8 @@
               "nuclei:wordpress-detect"
             ],
             "status": "confirmed",
-            "risk_score": 0.0
+            "risk_score": 0.0,
+            "confidence": null
           }
         },
         {
@@ -798,7 +809,8 @@
               "nuclei:git-config"
             ],
             "status": "confirmed",
-            "risk_score": 5.5
+            "risk_score": 5.5,
+            "confidence": null
           },
           "taxa": [
             {
@@ -813,7 +825,7 @@
       "invocations": [
         {
           "executionSuccessful": true,
-          "endTimeUtc": "2026-07-07T21:07:31Z"
+          "endTimeUtc": "2026-08-31T05:33:19Z"
         }
       ]
     }

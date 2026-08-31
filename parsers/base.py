@@ -67,6 +67,8 @@ class Finding:
     fp_reason: str = ""
     # LLM triage status: confirmed | likely_fp | unreviewed | suppressed
     status: str = "confirmed"
+    # LLM confidence in verdict (0.0–1.0); None = unreviewed or LLM did not return it.
+    confidence: float | None = None
     # Cross-scanner agreement trail. Seeded per parser to ``["<scanner>:<rule_id>"]``.
     # Dedup merges every duplicate scanner's entry in here so the report keeps
     # the strongest true-positive signal we have.

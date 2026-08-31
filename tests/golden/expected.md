@@ -5,8 +5,9 @@
 | Metric | Value |
 |---|---|
 | Total findings | 12 |
-| True positives | 12 |
+| Active (needs review) | 12 |
 | False positives filtered | 0 |
+| Suppressed | 0 |
 
 ### By Severity (true positives)
 
@@ -20,20 +21,20 @@
 
 ## Findings
 
-| Severity | Rule | Scanners | Title | Location | Risk Score | Notes |
-|---|---|---|---|---|---|---|
-| 🔴 CRITICAL | `CVE-2022-1000` | trivy  | CVE-2022-1000: openssl 3.0.0 | `example.local/app:1.0 (alpine 3.18.0)` | 9.5 | ⚠ unreviewed |
-| 🟠 HIGH | `python.lang.security.audit.sqli.raw-query-format-string` | semgrep x2 | raw-query-format-string | `app/db.py:42` | 9.0 | ⚠ unreviewed |
-| 🟠 HIGH | `40012` | zap  | Cross Site Scripting (Reflected) | `http://localhost:5000/search?q=test` | 8.0 | ⚠ unreviewed |
-| 🟠 HIGH | `CVE-2023-52425` | trivy  | CVE-2023-52425: libexpat 2.5.0-r0 | `example.local/app:1.0 (alpine 3.18.0)` | 7.5 | ⚠ unreviewed |
-| 🟠 HIGH | `DS002` | trivy  | Image user should not be 'root' | `app/Dockerfile:12` | 7.5 | ⚠ unreviewed |
-| 🟠 HIGH | `aws-access-key-id` | trivy  | AWS Access Key ID | `app/config/settings.py:4` | 8.5 | ⚠ unreviewed |
-| 🟠 HIGH | `CVE-2022-0778` | nuclei  | OpenSSL 3.0.0-3.0.2 - Denial of Service | `http://example.local/` | 7.5 | ⚠ unreviewed |
-| 🟡 MEDIUM | `python.flask.security.audit.hardcoded-secret` | semgrep  | hardcoded-secret | `config.py:8` | 6.5 | ⚠ unreviewed |
-| 🟡 MEDIUM | `git-config` | nuclei  | .git/config Exposure | `http://example.local/.git/config` | 5.5 | ⚠ unreviewed |
-| 🔵 LOW | `B105` | bandit  | hardcoded_password_string | `auth/login.py:15` | 2.5 | ⚠ unreviewed |
-| 🔵 LOW | `10021` | zap  | X-Content-Type-Options Header Missing | `http://localhost:5000/` | 2.5 | ⚠ unreviewed |
-| ⚪ INFO | `wordpress-detect` | nuclei  | WordPress Detection | `http://example.local/wp-login.php` | 0.0 | ⚠ unreviewed |
+| Severity | Rule | Scanners | Title | Location | Risk Score | Confidence | Notes |
+|---|---|---|---|---|---|---|---|
+| 🔴 CRITICAL | `CVE-2022-1000` | trivy  | CVE-2022-1000: openssl 3.0.0 | `example.local/app:1.0 (alpine 3.18.0)` | 9.5 | — | ⚠ unreviewed |
+| 🟠 HIGH | `python.lang.security.audit.sqli.raw-query-format-string` | semgrep x2 | raw-query-format-string | `app/db.py:42` | 9.0 | — | ⚠ unreviewed |
+| 🟠 HIGH | `40012` | zap  | Cross Site Scripting (Reflected) | `http://localhost:5000/search?q=test` | 8.0 | — | ⚠ unreviewed |
+| 🟠 HIGH | `CVE-2023-52425` | trivy  | CVE-2023-52425: libexpat 2.5.0-r0 | `example.local/app:1.0 (alpine 3.18.0)` | 7.5 | — | ⚠ unreviewed |
+| 🟠 HIGH | `DS002` | trivy  | Image user should not be 'root' | `app/Dockerfile:12` | 7.5 | — | ⚠ unreviewed |
+| 🟠 HIGH | `aws-access-key-id` | trivy  | AWS Access Key ID | `app/config/settings.py:4` | 8.5 | — | ⚠ unreviewed |
+| 🟠 HIGH | `CVE-2022-0778` | nuclei  | OpenSSL 3.0.0-3.0.2 - Denial of Service | `http://example.local/` | 7.5 | — | ⚠ unreviewed |
+| 🟡 MEDIUM | `python.flask.security.audit.hardcoded-secret` | semgrep  | hardcoded-secret | `config.py:8` | 6.5 | — | ⚠ unreviewed |
+| 🟡 MEDIUM | `git-config` | nuclei  | .git/config Exposure | `http://example.local/.git/config` | 5.5 | — | ⚠ unreviewed |
+| 🔵 LOW | `B105` | bandit  | hardcoded_password_string | `auth/login.py:15` | 2.5 | — | ⚠ unreviewed |
+| 🔵 LOW | `10021` | zap  | X-Content-Type-Options Header Missing | `http://localhost:5000/` | 2.5 | — | ⚠ unreviewed |
+| ⚪ INFO | `wordpress-detect` | nuclei  | WordPress Detection | `http://example.local/wp-login.php` | 0.0 | — | ⚠ unreviewed |
 
 ---
 

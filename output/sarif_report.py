@@ -86,6 +86,7 @@ def _build_results(findings: list[Finding]) -> list[dict[str, Any]]:
                 "sources": f.sources,
                 "status": f.status,
                 "risk_score": f.risk_score,
+                "confidence": f.confidence,
             },
         }
         if f.cwe:

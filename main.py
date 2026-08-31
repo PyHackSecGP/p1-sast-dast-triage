@@ -7,8 +7,8 @@ import logging
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
-from core import assign_risk_score, deduplicate, filter_false_positives
-from output import write_json, write_markdown, write_sarif
+from core import apply_suppressions, assign_risk_score, deduplicate, filter_false_positives
+from output import write_html, write_json, write_markdown, write_sarif
 from parsers import PARSERS
 
 log = logging.getLogger("triage")
@@ -68,9 +68,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--format",
         "-f",
-        choices=["json", "markdown", "sarif", "both"],
+        choices=["json", "markdown", "sarif", "html", "both", "all"],
         default="both",
-        help="Output format (default: both)",
+        help="Output format: both=json+markdown, all=json+markdown+sarif+html (default: both)",
+    )
+    p.add_argument(
+        "--suppress",
+        metavar="FILE",
+        default="suppressions.yaml",
+        help="Path to suppressions.yaml (default: suppressions.yaml in CWD; skipped if absent)",
     )
     p.add_argument(
         "--llm",
@@ -107,6 +113,11 @@ def main() -> None:
 
     findings = assign_risk_score(findings)
 
+    findings = apply_suppressions(findings, args.suppress)
+    suppressed_count = sum(1 for f in findings if f.status == "suppressed")
+    if suppressed_count:
+        log.info("%d finding(s) suppressed by %s", suppressed_count, args.suppress)
+
     if args.llm:
         log.info("Running LLM false-positive filter on %d findings", len(findings))
         findings = filter_false_positives(findings, verbose=args.verbose > 0)
@@ -119,20 +130,26 @@ def main() -> None:
             len(findings) - fp_count - unreviewed,
         )
 
-    if args.format in ("json", "both"):
+    fmt = args.format
+    if fmt in ("json", "both", "all"):
         out = f"{args.output}.json"
         write_json(findings, out)
         log.info("JSON report written to %s", out)
 
-    if args.format in ("markdown", "both"):
+    if fmt in ("markdown", "both", "all"):
         out = f"{args.output}.md"
         write_markdown(findings, out)
         log.info("Markdown report written to %s", out)
 
-    if args.format == "sarif":
+    if fmt in ("sarif", "all"):
         out = f"{args.output}.sarif"
         write_sarif(findings, out)
         log.info("SARIF report written to %s", out)
+
+    if fmt in ("html", "all"):
+        out = f"{args.output}.html"
+        write_html(findings, out)
+        log.info("HTML report written to %s", out)
 
     # Severity histogram is product output, not diagnostic logging — stdout.
     by_sev: dict[str, int] = {}

@@ -1,14 +1,17 @@
 """Tool-calling wrappers around P1's existing parsers, core, and output modules."""
 from __future__ import annotations
 import json
+from pathlib import Path
 from typing import Any
 
 from agent_core import tool
 from agent_core.models import ToolRisk
 
 from core.dedup import deduplicate
+from core.llm import filter_false_positives as _core_filter_fp
 from core.scorer import assign_risk_score
 from core.suppression import apply_suppressions as _core_apply_suppressions
+from output import write_json, write_markdown, write_sarif, write_html
 from parsers import SemgrepParser, BanditParser, ZapParser, TrivyParser, NucleiParser
 from parsers.base import Finding
 
@@ -124,5 +127,50 @@ def apply_suppressions(session_id: str, ruleset: str) -> str:
         suppressed = sum(1 for f in updated if f.status == "suppressed")
         active = sum(1 for f in updated if f.status != "suppressed")
         return json.dumps({"session_id": session_id, "suppressed": suppressed, "active": active})
+    except Exception as exc:
+        return json.dumps({"session_id": session_id, "error": str(exc)})
+
+
+@tool(description="Run LLM false-positive filter on confirmed findings. Uses OLLAMA_HOST and TRIAGE_MODEL env vars.", risk=ToolRisk.NONE)
+def filter_false_positives(session_id: str) -> str:
+    """Classify confirmed findings as true_positive or false_positive via LLM. Returns FP stats."""
+    try:
+        findings = _STORE.get(session_id, [])
+        updated = _core_filter_fp(findings)
+        _STORE[session_id] = updated
+        likely_fp = sum(1 for f in updated if f.status == "likely_fp")
+        confirmed = sum(1 for f in updated if f.status == "confirmed")
+        return json.dumps({"session_id": session_id, "likely_fp": likely_fp, "confirmed": confirmed})
+    except Exception as exc:
+        return json.dumps({"session_id": session_id, "error": str(exc)})
+
+
+@tool(description="Write triage report file(s) to output_dir. format: json|markdown|sarif|html|all.", risk=ToolRisk.FILESYSTEM)
+def generate_report(session_id: str, format: str, output_dir: str) -> str:
+    """Write report file(s) for current session findings. Returns list of written file paths."""
+    try:
+        findings = _STORE.get(session_id, [])
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        base = str(Path(output_dir) / f"triage_{session_id}")
+        files: list[str] = []
+
+        if format in ("json", "both", "all"):
+            p = f"{base}.json"
+            write_json(findings, p)
+            files.append(p)
+        if format in ("markdown", "both", "all"):
+            p = f"{base}.md"
+            write_markdown(findings, p)
+            files.append(p)
+        if format in ("sarif", "all"):
+            p = f"{base}.sarif"
+            write_sarif(findings, p)
+            files.append(p)
+        if format in ("html", "all"):
+            p = f"{base}.html"
+            write_html(findings, p)
+            files.append(p)
+
+        return json.dumps({"session_id": session_id, "count": len(findings), "files": files})
     except Exception as exc:
         return json.dumps({"session_id": session_id, "error": str(exc)})

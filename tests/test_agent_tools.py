@@ -5,6 +5,8 @@ import os
 import sys
 import tempfile
 import uuid
+import unittest.mock as mock
+from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -13,6 +15,7 @@ from agent.tools import (
     deduplicate_findings, score_findings, apply_suppressions,
     _STORE,
 )
+from agent.tools import filter_false_positives, generate_report
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -111,3 +114,40 @@ def test_apply_suppressions_suppresses_matching():
         assert result["active"] == 1
     finally:
         os.unlink(sup_path)
+
+
+# ── FP filter + report tools ──────────────────────────────────────────────────
+
+def test_filter_false_positives_marks_fps():
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    deduplicate_findings(session_id=sid)
+    score_findings(session_id=sid)
+
+    def fake_filter(findings, verbose=False):
+        if findings:
+            findings[0].status = "likely_fp"
+            findings[0].confidence = 0.9
+        return findings
+
+    with mock.patch("agent.tools._core_filter_fp", side_effect=fake_filter):
+        result = json.loads(filter_false_positives(session_id=sid))
+
+    assert result["likely_fp"] == 1
+    assert result["confirmed"] == 1
+
+
+def test_generate_report_writes_json(tmp_path):
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    result = json.loads(generate_report(session_id=sid, format="json", output_dir=str(tmp_path)))
+    assert len(result["files"]) == 1
+    assert result["files"][0].endswith(".json")
+    assert Path(result["files"][0]).exists()
+
+
+def test_generate_report_writes_all_formats(tmp_path):
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    result = json.loads(generate_report(session_id=sid, format="all", output_dir=str(tmp_path)))
+    assert len(result["files"]) == 4  # json + markdown + sarif + html

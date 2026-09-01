@@ -73,6 +73,10 @@ class TriageAgent:
         Returns:
             AgentResult with output text, stop reason, and full tool-call audit trail.
         """
+        VALID_SCANNERS = {"semgrep", "bandit", "zap", "trivy", "nuclei"}
+        if scanner not in VALID_SCANNERS:
+            raise ValueError(f"Unknown scanner {scanner!r}. Valid: {sorted(VALID_SCANNERS)}")
+
         sid = session_id or str(uuid.uuid4())[:8]
 
         fp_step = f'5. filter_false_positives(session_id="{sid}")\n' if run_fp_filter else ""

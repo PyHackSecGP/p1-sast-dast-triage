@@ -86,6 +86,8 @@ def test_score_findings_assigns_nonzero_scores():
     result = json.loads(score_findings(session_id=sid))
     assert result["count"] > 0
     assert all(f.risk_score > 0 for f in _STORE[sid])
+    assert "by_severity" in result
+    assert sum(result["by_severity"].values()) == result["count"]
 
 
 def test_apply_suppressions_skips_missing_file():

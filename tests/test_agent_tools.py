@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 import os
 import sys
+import tempfile
 import uuid
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from agent.tools import (
     parse_semgrep, parse_bandit, parse_zap, parse_trivy, parse_nuclei,
+    deduplicate_findings, score_findings, apply_suppressions,
     _STORE,
 )
 
@@ -62,3 +64,48 @@ def test_parse_missing_file_returns_error():
     sid = fresh_sid()
     result = json.loads(parse_semgrep(file="/nonexistent/path.json", session_id=sid))
     assert "error" in result
+
+
+# ── Pipeline tools ────────────────────────────────────────────────────────────
+
+def test_deduplicate_findings_reduces_count():
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    before = len(_STORE[sid])
+    # semgrep_sample.json has 2 unique findings — dedup keeps both
+    result = json.loads(deduplicate_findings(session_id=sid))
+    assert result["after"] <= result["before"]
+    assert result["session_id"] == sid
+    assert len(_STORE[sid]) == result["after"]
+
+
+def test_score_findings_assigns_nonzero_scores():
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    deduplicate_findings(session_id=sid)
+    result = json.loads(score_findings(session_id=sid))
+    assert result["count"] > 0
+    assert all(f.risk_score > 0 for f in _STORE[sid])
+
+
+def test_apply_suppressions_skips_missing_file():
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    result = json.loads(apply_suppressions(session_id=sid, ruleset="/nonexistent/suppressions.yaml"))
+    assert result["suppressed"] == 0
+    assert result["active"] == 2
+
+
+def test_apply_suppressions_suppresses_matching():
+    sid = fresh_sid()
+    parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write("- rule_id: python.lang.security.audit.sqli.raw-query-format-string\n")
+        f.write("  reason: test suppression\n")
+        sup_path = f.name
+    try:
+        result = json.loads(apply_suppressions(session_id=sid, ruleset=sup_path))
+        assert result["suppressed"] == 1
+        assert result["active"] == 1
+    finally:
+        os.unlink(sup_path)

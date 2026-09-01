@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
@@ -115,16 +116,19 @@ def main() -> None:
     _configure_logging(args.verbose, args.quiet)
 
     if args.agentic:
-        import os
         from agent import TriageAgent
         from agent_core.llm import get_provider as _get_provider
         provider = _get_provider(provider=args.provider)
         triage = TriageAgent(provider=provider)
+        # "both" is a CLI alias not understood by generate_report; remap to "all".
+        fmt = args.format if args.format in ("json", "markdown", "sarif", "html", "all") else "all"
+        if args.format not in ("json", "markdown", "sarif", "html", "all"):
+            log.warning("--agentic: format %r not supported by agent; using 'all'", args.format)
         result = triage.run(
             input_file=args.input,
             scanner=args.scanner,
             suppress_file=args.suppress,
-            format=args.format if args.format in ("json", "markdown", "sarif", "html", "all") else "all",
+            format=fmt,
             output_dir=os.path.dirname(os.path.abspath(args.output)),
             run_fp_filter=args.llm,
         )

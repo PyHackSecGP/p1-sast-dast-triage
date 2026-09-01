@@ -11,6 +11,7 @@ from parsers.base import Finding
 
 # Module-level session store. Key = session_id, value = list[Finding].
 # Tools write here; the agent memory holds only JSON summaries.
+# Intentionally not evicted — P1 is a CLI tool; each invocation creates one session.
 _STORE: dict[str, list[Finding]] = {}
 
 

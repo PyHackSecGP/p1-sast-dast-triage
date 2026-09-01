@@ -3,12 +3,10 @@ from __future__ import annotations
 import json
 import os
 import sys
-import tempfile
 import uuid
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import pytest
 from agent.tools import (
     parse_semgrep, parse_bandit, parse_zap, parse_trivy, parse_nuclei,
     _STORE,
@@ -56,7 +54,7 @@ def test_parse_trivy_populates_store():
 def test_parse_nuclei_populates_store():
     sid = fresh_sid()
     result = json.loads(parse_nuclei(file=f"{FIXTURES}/nuclei_sample.jsonl", session_id=sid))
-    assert result["count"] >= 1
+    assert result["count"] == 3
     assert _STORE[sid][0].scanner == "nuclei"
 
 

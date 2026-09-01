@@ -149,16 +149,20 @@ def filter_false_positives(session_id: str) -> str:
 def generate_report(session_id: str, format: str, output_dir: str) -> str:
     """Write report file(s) for current session findings. Returns list of written file paths."""
     try:
+        VALID_FORMATS = {"json", "markdown", "sarif", "html", "all"}
+        if format not in VALID_FORMATS:
+            return json.dumps({"session_id": session_id, "error": f"Unknown format: {format!r}. Valid: {sorted(VALID_FORMATS)}"})
+
         findings = _STORE.get(session_id, [])
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         base = str(Path(output_dir) / f"triage_{session_id}")
         files: list[str] = []
 
-        if format in ("json", "both", "all"):
+        if format in ("json", "all"):
             p = f"{base}.json"
             write_json(findings, p)
             files.append(p)
-        if format in ("markdown", "both", "all"):
+        if format in ("markdown", "all"):
             p = f"{base}.md"
             write_markdown(findings, p)
             files.append(p)

@@ -95,6 +95,17 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Suppress per-stage progress (WARNING and above only)",
     )
+    p.add_argument(
+        "--agentic",
+        action="store_true",
+        help="Run as a tool-calling agent (requires AGENT_PROVIDER env var or ANTHROPIC_API_KEY)",
+    )
+    p.add_argument(
+        "--provider",
+        choices=["claude", "ollama"],
+        default="",
+        help="LLM provider for --agentic mode (default: AGENT_PROVIDER env var or ollama)",
+    )
     return p.parse_args()
 
 
@@ -102,6 +113,26 @@ def main() -> None:
     """Run the triage pipeline."""
     args = parse_args()
     _configure_logging(args.verbose, args.quiet)
+
+    if args.agentic:
+        import os
+        from agent import TriageAgent
+        from agent_core.llm import get_provider as _get_provider
+        provider = _get_provider(provider=args.provider)
+        triage = TriageAgent(provider=provider)
+        result = triage.run(
+            input_file=args.input,
+            scanner=args.scanner,
+            suppress_file=args.suppress,
+            format=args.format if args.format in ("json", "markdown", "sarif", "html", "all") else "all",
+            output_dir=os.path.dirname(os.path.abspath(args.output)),
+            run_fp_filter=args.llm,
+        )
+        print(result.output or "")
+        print(f"\nTools called: {[tc.name for tc in result.tool_calls]}")
+        print(f"Iterations:   {result.iterations}")
+        print(f"Stop reason:  {result.stop_reason.value}")
+        return
 
     log.info("Parsing %s output from %s", args.scanner, args.input)
     parser = PARSERS[args.scanner]()

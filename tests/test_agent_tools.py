@@ -1,21 +1,29 @@
 """Tests for agent tools — uses existing fixtures in tests/fixtures/."""
 from __future__ import annotations
+
 import json
 import os
 import sys
 import tempfile
-import uuid
 import unittest.mock as mock
+import uuid
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from agent.tools import (
-    parse_semgrep, parse_bandit, parse_zap, parse_trivy, parse_nuclei,
-    deduplicate_findings, score_findings, apply_suppressions,
     _STORE,
+    apply_suppressions,
+    deduplicate_findings,
+    filter_false_positives,
+    generate_report,
+    parse_bandit,
+    parse_nuclei,
+    parse_semgrep,
+    parse_trivy,
+    parse_zap,
+    score_findings,
 )
-from agent.tools import filter_false_positives, generate_report
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -74,7 +82,6 @@ def test_parse_missing_file_returns_error():
 def test_deduplicate_findings_reduces_count():
     sid = fresh_sid()
     parse_semgrep(file=f"{FIXTURES}/semgrep_sample.json", session_id=sid)
-    before = len(_STORE[sid])
     # semgrep_sample.json has 2 unique findings — dedup keeps both
     result = json.loads(deduplicate_findings(session_id=sid))
     assert result["after"] <= result["before"]

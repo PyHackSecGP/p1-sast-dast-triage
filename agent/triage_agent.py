@@ -1,16 +1,24 @@
 """TriageAgent — wraps agent-core.Agent for SAST/DAST triage workflow."""
 from __future__ import annotations
+
 import uuid
 
 from agent_core import Agent, ToolRegistry
-from agent_core.llm.base import LLMProvider
 from agent_core.llm import get_provider
+from agent_core.llm.base import LLMProvider
 from agent_core.models import AgentResult, ExecutionPolicy
 
 from .tools import (
-    parse_semgrep, parse_bandit, parse_zap, parse_trivy, parse_nuclei,
-    deduplicate_findings, score_findings, apply_suppressions,
-    filter_false_positives, generate_report,
+    apply_suppressions,
+    deduplicate_findings,
+    filter_false_positives,
+    generate_report,
+    parse_bandit,
+    parse_nuclei,
+    parse_semgrep,
+    parse_trivy,
+    parse_zap,
+    score_findings,
 )
 
 _ALL_TOOLS = [

@@ -99,7 +99,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--agentic",
         action="store_true",
-        help="Run as a tool-calling agent (requires AGENT_PROVIDER env var or ANTHROPIC_API_KEY)",
+        help="Run as tool-calling agent. Output written to triage_<id>.<ext> in --output's directory (requires AGENT_PROVIDER or ANTHROPIC_API_KEY)",
     )
     p.add_argument(
         "--provider",

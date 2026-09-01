@@ -1,5 +1,6 @@
 """Tool-calling wrappers around P1's existing parsers, core, and output modules."""
 from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Any
@@ -11,8 +12,8 @@ from core.dedup import deduplicate
 from core.llm import filter_false_positives as _core_filter_fp
 from core.scorer import assign_risk_score
 from core.suppression import apply_suppressions as _core_apply_suppressions
-from output import write_json, write_markdown, write_sarif, write_html
-from parsers import SemgrepParser, BanditParser, ZapParser, TrivyParser, NucleiParser
+from output import write_html, write_json, write_markdown, write_sarif
+from parsers import BanditParser, NucleiParser, SemgrepParser, TrivyParser, ZapParser
 from parsers.base import Finding
 
 # Module-level session store. Key = session_id, value = list[Finding].
@@ -140,7 +141,8 @@ def filter_false_positives(session_id: str) -> str:
         _STORE[session_id] = updated
         likely_fp = sum(1 for f in updated if f.status == "likely_fp")
         confirmed = sum(1 for f in updated if f.status == "confirmed")
-        return json.dumps({"session_id": session_id, "likely_fp": likely_fp, "confirmed": confirmed})
+        unreviewed = sum(1 for f in updated if f.status == "unreviewed")
+        return json.dumps({"session_id": session_id, "likely_fp": likely_fp, "confirmed": confirmed, "unreviewed": unreviewed})
     except Exception as exc:
         return json.dumps({"session_id": session_id, "error": str(exc)})
 

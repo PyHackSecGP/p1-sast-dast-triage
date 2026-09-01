@@ -1,5 +1,6 @@
 """Integration tests for TriageAgent using MockProvider."""
 from __future__ import annotations
+
 import os
 import sys
 import tempfile
@@ -7,7 +8,7 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from agent_core.llm.base import LLMProvider
-from agent_core.models import LLMResponse, ToolCall, StopReason
+from agent_core.models import LLMResponse, StopReason, ToolCall
 
 from agent.triage_agent import TriageAgent
 
